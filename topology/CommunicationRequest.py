@@ -1,5 +1,6 @@
 class CommunicationRequest:  # TODO Überprüfen, ob es vielleicht Sinn ergibt statt ints node Instanzen zu speichern
-    def __init__(self, src, dst):
+    def __init__(self, id, src, dst):
+        self.id = id
         self.src = src
         self.dst = dst
         # self.cost = 0

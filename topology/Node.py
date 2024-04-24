@@ -1,9 +1,11 @@
 class Node:
-    def __init__(self, key):
+    def __init__(self, key: int):
         self.key = key
         self.parent = None
         self.left = None
         self.right = None
+        self.lastLeftParent = 0
+        self.lastRightParent = float('inf')
 
     def __repr__(self):
         return f"Node {self.key}"

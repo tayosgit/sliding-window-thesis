@@ -1,69 +1,78 @@
 from topology.Node import Node
-
-
-class SplayNetwork:
+class SplayNet:
 
     def __init__(self):
-        self.root = None
-        self.routing_cost = 0
-        self.adjustment_cost = 0
+        self.root = None  # root of the BST
+        self.serviceCost = 0
+        self.rotationCost = 0
 
-    def get_adjustment_cost(self):
-        return self.adjustment_cost
 
-    def get_routing_cost(self):
-        return self.routing_cost
+    def setInsertionOver(self):
+        self.insertionOver = True
 
-    def increase_adjustment_cost(self, cost: int):
-        self.adjustment_cost += cost
+    def getRotationCost(self):
+        return self.rotationCost
 
-    def increase_routing_cost(self, cost: int):
+    def getServiceCost(self):
+        return self.serviceCost
+
+    def increaseRotationCost(self, cost):
+        self.rotationCost += cost
+
+    def increaseServingCost(self, cost):
         if cost < 0:
             raise Exception("distance < 0")
         if cost == 0:
             raise Exception("distance = 0")
-        self.routing_cost += cost
+        self.serviceCost += cost
 
-    def insert_balanced_BST(self, node_list: [int]):
-        node_list.sort()
-        k = len(node_list) // 2
-        self.root = Node(node_list[k])
-        self.root.left = self.insertion_iteration(node_list[:k], self.root)
-        self.root.right = self.insertion_iteration(node_list[k + 1:], self.root)
+    def insertBalancedBST(self, nodeList):
+        nodeList.sort()
+        k = len(nodeList) // 2
+        self.root = Node(nodeList[k])
+        self.root.left = self.insertionIteration(nodeList[:k], self.root)
+        self.root.right = self.insertionIteration(nodeList[k + 1:], self.root)
 
-    def insertion_iteration(self, node_list: [int], parent: Node) -> Node | None:
-        if len(node_list) == 0:
+    def insertionIteration(self, nodeList, parent):
+        if len(nodeList) == 0:
             return None
-        k = len(node_list) // 2
-        new_node = Node(node_list[k])
-        new_node.parent = parent
-        new_node.left = self.insertion_iteration(node_list[:k], new_node)
-        new_node.right = self.insertion_iteration(node_list[k + 1:], new_node)
-        return new_node
+        k = len(nodeList) // 2
+        newNode = Node(nodeList[k])
+        newNode.parent = parent
+        newNode.left = self.insertionIteration(nodeList[:k], newNode)
+        newNode.right = self.insertionIteration(nodeList[k + 1:], newNode)
+        return newNode
 
-    def commute(self, u: int, v: int):
-        node_u = u
-        node_v = v
-        common_ancestor = self.find_LCA(node_u, node_v)
-        if common_ancestor.key == node_v:
-            node_u, node_v = node_v, node_u
+    def assignLastParents(self, node, left, right):
+        if node:
+            node.lastLeftParent = left
+            node.lastRightParent = right
+            self.assignLastParents(node.left, left, node.key)
+            self.assignLastParents(node.right, node.key, right)
+
+    def commute(self, u, v):
+        uNode = u
+        vNode = v
+        common_ancestor = self.findLCA(uNode, vNode)
+        if common_ancestor.key == vNode:
+            uNode, vNode = vNode, uNode
         parent_CA = common_ancestor.parent or common_ancestor
         if parent_CA.key > common_ancestor.key:
-            new_LCA = self.splay_wrapper(common_ancestor, node_u)
+            newLCA = self.splay_new(common_ancestor, uNode)
         elif parent_CA.key < common_ancestor.key:
-            new_LCA = self.splay_wrapper(common_ancestor, node_u)
+            newLCA = self.splay_new(common_ancestor, uNode)
         else:
-            new_LCA = self.splay_wrapper(self.root, node_u)
-        if node_u == node_v:
+            newLCA = self.splay_new(self.root, uNode)
+        if uNode == vNode:
             raise Exception("gleiche Knoten kommunizieren")
-        if node_u > node_v:
-            self.splay_wrapper(new_LCA.left, node_v)
-        if node_u < node_v:
-            self.splay_wrapper(new_LCA.right, node_v)
-        distance = self.calculate_distance(node_u, node_v)
-        self.increase_routing_cost(distance)
+        if uNode > vNode:
+            self.splay_new(newLCA.left, vNode)
+        if uNode < vNode:
+            self.splay_new(newLCA.right, vNode)
+        distance = self.calculate_distance(uNode, vNode)
+        self.increaseServingCost(distance)
 
-    def find_LCA(self, u: int, v: int) -> Node:
+    def findLCA(self, u, v):
         node = self.root
         while node and ((u > node.key and v > node.key) or (u < node.key and v < node.key)):
             if u > node.key:
@@ -73,7 +82,7 @@ class SplayNetwork:
         assert node is not None
         return node
 
-    def splay_wrapper(self, h: Node, key: int) -> Node:
+    def splay_new(self, h, key):
         if not h:
             raise Exception("Node in Splay() does not exist")
         node = h
@@ -87,14 +96,14 @@ class SplayNetwork:
                 return node
         raise Exception("Node in Splay() not found")
 
-    def splay_up(self, h: Node, k: Node) -> Node:
+    def splay_up(self, h, k):
         if h == k:
             return k
         elif k.parent == h:
             if h.left == k:
-                self.rotate_right(h)
+                self.rotateRight(h)
             elif h.right == k:
-                self.rotate_left(h)
+                self.rotateLeft(h)
             else:
                 raise Exception("H should be parent, but not has k as child")
             return k
@@ -102,27 +111,27 @@ class SplayNetwork:
             found = h == k.parent.parent
             if k.parent.parent.right == k.parent:
                 if k.parent.right == k:
-                    self.rotate_left(k.parent.parent)
+                    self.rotateLeft(k.parent.parent)
                 elif k.parent.left == k:
-                    self.rotate_right(k.parent)
+                    self.rotateRight(k.parent)
                 else:
                     raise Exception("k.p has not k as child")
-                self.rotate_left(k.parent)
+                self.rotateLeft(k.parent)
             elif k.parent.parent.left == k.parent:
                 if k.parent.right == k:
-                    self.rotate_left(k.parent)
+                    self.rotateLeft(k.parent)
                 elif k.parent.left == k:
-                    self.rotate_right(k.parent.parent)
+                    self.rotateRight(k.parent.parent)
                 else:
                     raise Exception("k.p has not k as child")
-                self.rotate_right(k.parent)
+                self.rotateRight(k.parent)
             else:
                 raise Exception("k.p.p has not k.p as child")
             if found:
                 return k
         return self.splay_up(h, k)
 
-    def rotate_right(self, h: Node) -> Node:
+    def rotateRight(self, h):
         if not h.left:
             raise Exception("kein linkes kind bei rechtsrotation")
         x = h.left
@@ -147,12 +156,12 @@ class SplayNetwork:
         else:
             self.root = x
         cost += 2
-        self.increase_adjustment_cost(cost)
+        self.increaseRotationCost(cost)
         x.lastRightParent = h.lastRightParent
         h.lastLeftParent = x.key
         return x
 
-    def rotate_left(self, h: Node) -> Node:
+    def rotateLeft(self, h):
         if not h.right:
             raise Exception("kein rechtes kind bei linksrotation")
         x = h.right
@@ -177,7 +186,7 @@ class SplayNetwork:
         else:
             self.root = x
         cost += 2
-        self.increase_adjustment_cost(cost)
+        self.increaseRotationCost(cost)
         x.lastLeftParent = h.lastLeftParent
         h.lastRightParent = x.key
         return x
@@ -193,13 +202,11 @@ class SplayNetwork:
                 current = current.left
         common_ancestor = current
         while current is not None and current.key != a:
-            current_left = current.left
-            if current_left != None:
-                if a < current_left.key:
-                    current = current.left
-                else:
-                    current = current.right
-                distance += 1
+            if a < current.left:
+                current = current.left
+            else:
+                current = current.right
+            distance += 1
         current = common_ancestor
         while current is not None and current.key != b:
             if b < current.key:
@@ -210,7 +217,7 @@ class SplayNetwork:
 
         return distance
 
-    def print_tree(self, node: Node, indent: int = 0, prefix: str = "Root"):
+    def print_tree(self, node, indent=0, prefix="Root"):
         """Druckt jeden Knoten des Baumes mit einer visuellen Darstellung der Eltern-Kind-Beziehungen."""
         if node is not None:
             # Drucke den rechten Teilbaum zuerst mit einem "\" um die Verbindung anzuzeigen
