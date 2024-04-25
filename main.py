@@ -55,7 +55,17 @@ if __name__ == '__main__':
             # costs.append((total_cost_splaynet, total_cost_lazy, total_cost_sliding))
             # sizes.append(network_size)
 
-    # Plotting results
+    # # Plotting results
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(sizes, [cost[0] for cost in costs], label='SplayNet')
+    # plt.plot(sizes, [cost[1] for cost in costs], label='Lazy SplayNet')
+    # plt.plot(sizes, [cost[2] for cost in costs], label='Sliding Window SplayNet')
+    # plt.xlabel('Size of Network')
+    # plt.ylabel('Total Cost of Operations')
+    # plt.title('Total Cost of Operations per Different Sizes of the Network')
+    # plt.legend()
+    # plt.savefig("output.png")
+
     plt.figure(figsize=(10, 6))
     plt.plot(sizes, [cost[0] for cost in costs], label='SplayNet')
     plt.plot(sizes, [cost[1] for cost in costs], label='Lazy SplayNet')
@@ -63,8 +73,9 @@ if __name__ == '__main__':
     plt.xlabel('Size of Network')
     plt.ylabel('Total Cost of Operations')
     plt.title('Total Cost of Operations per Different Sizes of the Network')
+    plt.yscale('log')  # Setzt die y-Achse auf eine logarithmische Skala
     plt.legend()
-    plt.show()
+    plt.savefig("output_logscale.png")
 
 
     # print(sigma)

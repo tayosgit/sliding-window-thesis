@@ -4,10 +4,11 @@ from topology.CommunicationRequest import CommunicationRequest
 
 
 def splaynet(topology: SplayNetwork, communication_sq: [CommunicationRequest]) -> (SplayNetwork, int):
+    # virtual_topology = copy.deepcopy(topology)
 
     for request in communication_sq:
-        u = request.src
-        v = request.dst
+        u = request.get_source()
+        v = request.get_destination()
 
         topology.commute(u, v)
 
@@ -19,17 +20,18 @@ def splaynet(topology: SplayNetwork, communication_sq: [CommunicationRequest]) -
 def lazy_splaynet(topology: SplayNetwork, communication_sq: [CommunicationRequest], alpha: int) -> (SplayNetwork, int):
     total_cost = 0
     accumulated_cost = 0
-    virtual_topology = topology
     # virtual_topology = copy.deepcopy(topology)
+    virtual_topology = topology
 
     for request in communication_sq:
-        u = request.src
-        v = request.dst
+        u = request.get_source()
+        v = request.get_destination()
 
         virtual_topology.commute(u, v)
         accumulated_cost = virtual_topology.get_routing_cost() + virtual_topology.get_adjustment_cost()
 
         if accumulated_cost > alpha:
+            # total_cost += virtual_topology.calculate_distance(u.key, v.key)
             total_cost += virtual_topology.calculate_distance(u, v)
             # topology = copy.deepcopy(virtual_topology)
             topology = virtual_topology
@@ -44,23 +46,23 @@ def lazy_splaynet(topology: SplayNetwork, communication_sq: [CommunicationReques
 def sliding_window_splaynet(initial_topology: SplayNetwork, communication_sq: [CommunicationRequest],
                             slide: int) -> (SplayNetwork, int):
     total_cost = 0
-    virtual_topology = initial_topology
-    resulting_topology = initial_topology
     # virtual_topology = copy.deepcopy(initial_topology)
+    virtual_topology = initial_topology
     # resulting_topology = copy.deepcopy(initial_topology)
+    resulting_topology = initial_topology
 
     for i, request in enumerate(communication_sq):
-        u = request.src
-        v = request.dst
+        u = request.get_source()
+        v = request.get_destination()
 
         virtual_topology.commute(u, v)
 
         if i % slide == 0 and i != slide:  # width of sliding window
-            resulting_topology = virtual_topology
             # resulting_topology = copy.deepcopy(virtual_topology)
+            resulting_topology = virtual_topology
             total_cost += 1 + resulting_topology.calculate_distance(u, v)
-            virtual_topology = initial_topology
             # virtual_topology = copy.deepcopy(initial_topology)
+            virtual_topology = initial_topology
         else:
             total_cost += 2  # Für die virtuellen Berechnungen
 

@@ -31,7 +31,7 @@ class SplayNetwork:
         self.root.left = self.insertion_iteration(node_list[:k], self.root)
         self.root.right = self.insertion_iteration(node_list[k + 1:], self.root)
 
-    def insertion_iteration(self, node_list: [int], parent: Node) -> Node | None:
+    def insertion_iteration(self, node_list: [int], parent: Node):
         if len(node_list) == 0:
             return None
         k = len(node_list) // 2
@@ -192,14 +192,12 @@ class SplayNetwork:
             else:
                 current = current.left
         common_ancestor = current
-        while current is not None and current.key != a:
-            current_left = current.left
-            if current_left != None:
-                if a < current_left.key:
-                    current = current.left
-                else:
-                    current = current.right
-                distance += 1
+        while current is not None and current.key != a and current.left is not None:
+            if a < current.left.key:
+                current = current.left
+            else:
+                current = current.right
+            distance += 1
         current = common_ancestor
         while current is not None and current.key != b:
             if b < current.key:
