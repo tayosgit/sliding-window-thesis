@@ -45,6 +45,9 @@ class SplayNetwork:
         node_u = u
         node_v = v
         common_ancestor = self.find_LCA(node_u, node_v)
+        distance = self.calculate_distance(node_u, node_v)
+        # print(f"u: {node_u}, v: {node_v}, distance: {distance}")
+
         if common_ancestor.key == node_v:
             node_u, node_v = node_v, node_u
         parent_CA = common_ancestor.parent or common_ancestor
@@ -60,7 +63,7 @@ class SplayNetwork:
             self.splay_wrapper(new_LCA.left, node_v)
         if node_u < node_v:
             self.splay_wrapper(new_LCA.right, node_v)
-        distance = self.calculate_distance(node_u, node_v)
+        # distance = self.calculate_distance(node_u, node_v)
         self.increase_routing_cost(distance)
 
     def find_LCA(self, u: int, v: int) -> Node:
@@ -192,6 +195,7 @@ class SplayNetwork:
             else:
                 current = current.left
         common_ancestor = current
+        # print(f"common_ancestor: {common_ancestor.key}")
         while current is not None and current.key != a and current.left is not None:
             if a < current.left.key:
                 current = current.left
@@ -199,11 +203,15 @@ class SplayNetwork:
                 current = current.right
             distance += 1
         current = common_ancestor
+        # print(f"common_ancestor 2: {common_ancestor.key}")
         while current is not None and current.key != b:
             if b < current.key:
                 current = current.left
             else:
                 current = current.right
+            distance += 1
+
+        if common_ancestor.key == a or common_ancestor.key == b:
             distance += 1
 
         return distance
