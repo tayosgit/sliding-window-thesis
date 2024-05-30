@@ -402,7 +402,8 @@ def compute_spatial_results(zipf_list, network_size_list, data_folder, lazy_spla
                 print(
                     f"Running SlidingWindow algorithm... with window size={window_size} and slide_offset={slide_offset}")
                 results_sliding = run_simulation_sliding(nodes, sigma, window_size, slide_offset)
-                results_df.loc[len(results_df)] = [network_size, zipf, "sliding", results_sliding[1], results_sliding[2],
+                results_df.loc[len(results_df)] = [network_size, zipf, "sliding", results_sliding[1],
+                                                   results_sliding[2],
                                                    results_sliding[0], None, window_size, slide_offset]
 
                 print(
@@ -521,66 +522,95 @@ def compute_temporal_results_old(tau_list, network_size_list,
 def plot_x_network_size_y_total_cost(df, log_scale_bool):
     plt.figure(figsize=(10, 6))
 
-    # Plot für total_cost_splaynet
-    plt.plot(df['network_size'], df['total_cost_splaynet'], label='SplayNet', marker='o')
+    # Filter data for each algorithm
+    df_splaynet = df[df['algorithm'] == 'splaynet']
+    df_lazy = df[df['algorithm'] == 'lazy']
+    df_sliding = df[df['algorithm'] == 'sliding']
+    df_sliding_no_reset = df[df['algorithm'] == 'sliding_no_reset']
 
-    # Plot für total_cost_lazy
-    plt.plot(df['network_size'], df['total_cost_lazy'], label='Lazy', marker='s')
+    # Plot for total_cost_splaynet
+    plt.plot(df_splaynet['network_size'], df_splaynet['total_cost'], label='SplayNet', marker='o')
 
-    # Plot für total_cost_sliding
-    plt.plot(df['network_size'], df['total_cost_sliding'], label='Sliding', marker='^')
+    # Plot for total_cost_lazy
+    plt.plot(df_lazy['network_size'], df_lazy['total_cost'], label='Lazy', marker='s')
 
-    # Achsenbeschriftungen und Titel
+    # Plot for total_cost_sliding
+    plt.plot(df_sliding['network_size'], df_sliding['total_cost'], label='Sliding', marker='^')
+
+    # Plot for total_cost_sliding
+    plt.plot(df_sliding_no_reset['network_size'], df_sliding_no_reset['total_cost'], label='Sliding no reset',
+             marker='x')
+
+    # Axis labels and title
     plt.xlabel('Network Size')
     plt.ylabel('Total Cost')
     plt.title('Total Cost vs Network Size')
 
-    # Legende anzeigen
+    # Show legend
     plt.legend()
 
-    # Plot anzeigen
+    # Show grid
     plt.grid(True)
 
-    filename = f"output/{add_timestamp("x_network_size_y_total_cost_log_scale")}.png" if log_scale_bool else f"output/{add_timestamp("x_network_size_y_total_cost")}.png"
+    # Log scale if required
+    if log_scale_bool:
+        plt.yscale('log')
+
+    # Save plot with a timestamp in the filename
+    type_of_data = "spatial" if "zipf" in df.columns else "temporal"
+    filename = f"output/{type_of_data}_{add_timestamp('x_network_size_y_total_cost_log_scale')}.png" if log_scale_bool else f"output/{type_of_data}_{add_timestamp('x_network_size_y_total_cost')}.png"
     plt.savefig(filename)
     plt.show()
-    # plt.savefig("output/x_network_size_y_total_cost.png")
 
 
 def plot_x_network_size_y_average_cost(df, log_scale_bool):
-    avg_df = df.groupby('network_size').mean().reset_index()
+    avg_df = df.groupby(['network_size', 'algorithm']).mean().reset_index()
 
     # Plot erstellen
     plt.figure(figsize=(10, 6))
 
-    # Plot für total_cost_splaynet
-    plt.plot(avg_df['network_size'], avg_df['total_cost_splaynet'], label='SplayNet', marker='o')
+    # Filter data for each algorithm
+    df_splaynet = avg_df[avg_df['algorithm'] == 'splaynet']
+    df_lazy = avg_df[avg_df['algorithm'] == 'lazy']
+    df_sliding = avg_df[avg_df['algorithm'] == 'sliding']
+    df_sliding_no_reset = avg_df[avg_df['algorithm'] == 'sliding_no_reset']
 
-    # Plot für total_cost_lazy
-    plt.plot(avg_df['network_size'], avg_df['total_cost_lazy'], label='Lazy', marker='s')
+    # Plot for total_cost_splaynet
+    plt.plot(df_splaynet['network_size'], df_splaynet['total_cost'], label='SplayNet', marker='o')
 
-    # Plot für total_cost_sliding
-    plt.plot(avg_df['network_size'], avg_df['total_cost_sliding'], label='Sliding', marker='^')
+    # Plot for total_cost_lazy
+    plt.plot(df_lazy['network_size'], df_lazy['total_cost'], label='Lazy', marker='s')
 
-    # Achsenbeschriftungen und Titel
+    # Plot for total_cost_sliding
+    plt.plot(df_sliding['network_size'], df_sliding['total_cost'], label='Sliding', marker='^')
+
+    plt.plot(df_sliding_no_reset['network_size'], df_sliding_no_reset['total_cost'], label='Sliding no reset',
+             marker='x')
+
+    # Axis labels and title
     plt.xlabel('Network Size')
     plt.ylabel('Average Total Cost')
     plt.title('Average Total Cost vs Network Size')
 
-    # Legende anzeigen
+    # Show legend
     plt.legend()
 
-    # Plot anzeigen
+    # Show grid
+    plt.grid(True)
+
+    # Log scale if required
     if log_scale_bool:
         plt.yscale('log')
 
-    plt.grid(True)
-    filename = f"output/{add_timestamp("x_network_size_y_average_cost_log_scale")}.png" if log_scale_bool else f"output/{add_timestamp("x_network_size_y_average_cost")}.png"
+    # Save plot with a timestamp in the filename
+    type_of_data = "spatial" if "zipf" in df.columns else "temporal"
+    filename = f"output/{type_of_data}_{add_timestamp('x_network_size_y_average_cost_log_scale')}.png" if log_scale_bool else f"output/{type_of_data}_{add_timestamp('x_network_size_y_average_cost')}.png"
     plt.savefig(filename)
     plt.show()
 
 
-def plot_x_tau_y_total_cost(df, network_size):
+def plot_x_zipf_or_tau_y_total_cost(df, network_size):
+    zipf_or_tau = "zipf" if "zipf" in df.columns else "tau"
     filtered_df = df[df['network_size'] == network_size]
 
     if filtered_df.empty:
@@ -590,68 +620,125 @@ def plot_x_tau_y_total_cost(df, network_size):
     # Plot erstellen
     plt.figure(figsize=(10, 6))
 
-    # Plot für total_cost_splaynet
-    plt.plot(filtered_df['tau'], filtered_df['total_cost_splaynet'], label='SplayNet', marker='o')
+    # Filter data for each algorithm
+    df_splaynet = filtered_df[filtered_df['algorithm'] == 'splaynet']
+    df_lazy = filtered_df[filtered_df['algorithm'] == 'lazy']
+    df_sliding = filtered_df[filtered_df['algorithm'] == 'sliding']
+    df_sliding_no_reset = filtered_df[filtered_df['algorithm'] == 'sliding_no_reset']
 
-    # Plot für total_cost_lazy
-    plt.plot(filtered_df['tau'], filtered_df['total_cost_lazy'], label='Lazy', marker='s')
+    # Plot for total_cost_splaynet
+    plt.plot(df_splaynet[zipf_or_tau], df_splaynet['total_cost'], label='SplayNet', marker='o')
 
-    # Plot für total_cost_sliding
-    plt.plot(filtered_df['tau'], filtered_df['total_cost_sliding'], label='Sliding', marker='^')
+    # Plot for total_cost_lazy
+    plt.plot(df_lazy[zipf_or_tau], df_lazy['total_cost'], label='Lazy', marker='s')
 
-    # Achsenbeschriftungen und Titel
-    plt.xlabel('Tau')
+    # Plot for total_cost_sliding
+    plt.plot(df_sliding[zipf_or_tau], df_sliding['total_cost'], label='Sliding', marker='^')
+
+    # Plot for total_cost_sliding_no_reset
+    plt.plot(df_sliding_no_reset[zipf_or_tau], df_sliding_no_reset['total_cost'], label='Sliding No Reset', marker='x')
+
+    # Axis labels and title
+    plt.xlabel(zipf_or_tau)
     plt.ylabel('Total Cost')
-    plt.title(f'Total Cost vs Tau for Network Size {network_size}')
+    plt.title(f'Total Cost vs {zipf_or_tau} for Network Size {network_size}')
 
-    # Legende anzeigen
+    # Show legend
     plt.legend()
 
-    # Logarithmische Skala auf der y-Achse setzen
-    # plt.yscale('log')
-
-    # Grid anzeigen
+    # Show grid
     plt.grid(True)
+    type_text = "temporal" if zipf_or_tau == "tau" else "spatial"
 
-    plt.savefig(f"output/x_tau_y_total_cost_network_size_{network_size}{add_timestamp("")}.png")
-    # Plot anzeigen
+    # Save plot with a timestamp in the filename
+    plt.savefig(f"output/{type_text}_x_{zipf_or_tau}_y_total_cost_network_size_{network_size}{add_timestamp('')}.png")
+    # Show plot
     plt.show()
 
 
-def plot_avg_cost_comparison(df, with_lazy):
-    # Durchschnittliche Werte für jede Network Size berechnen
-    avg_df = df.groupby('network_size').mean().reset_index()
+def plot_x_zipf_or_tau_y_average_cost(df, network_size):
+    zipf_or_tau = "zipf" if "zipf" in df.columns else "tau"
+    filtered_df = df[df['network_size'] == network_size]
+
+    if filtered_df.empty:
+        print(f"No data available for network size {network_size}")
+        return
+
+    avg_df = filtered_df.groupby([zipf_or_tau, 'algorithm']).mean().reset_index()
 
     # Plot erstellen
     plt.figure(figsize=(10, 6))
 
-    # Plot für total_cost_lazy
-    if with_lazy:
-        plt.plot(avg_df['network_size'], avg_df['total_cost_lazy'], label='Lazy', marker='o')
+    # Filter data for each algorithm
+    df_splaynet = avg_df[avg_df['algorithm'] == 'splaynet']
+    df_lazy = avg_df[avg_df['algorithm'] == 'lazy']
+    df_sliding = avg_df[avg_df['algorithm'] == 'sliding']
+    df_sliding_no_reset = avg_df[avg_df['algorithm'] == 'sliding_no_reset']
 
-    # Plot für total_cost_sliding
-    plt.plot(avg_df['network_size'], avg_df['total_cost_sliding'], label='Sliding', marker='s')
+    # Plot for total_cost_splaynet
+    plt.plot(df_splaynet[zipf_or_tau], df_splaynet['total_cost'], label='SplayNet', marker='o')
+
+    # Plot for total_cost_lazy
+    plt.plot(df_lazy[zipf_or_tau], df_lazy['total_cost'], label='Lazy', marker='s')
+
+    # Plot for total_cost_sliding
+    plt.plot(df_sliding[zipf_or_tau], df_sliding['total_cost'], label='Sliding', marker='^')
+
+    # Plot for total_cost_sliding_no_reset
+    plt.plot(df_sliding_no_reset[zipf_or_tau], df_sliding_no_reset['total_cost'], label='Sliding No Reset', marker='x')
+
+    # Axis labels and title
+    plt.xlabel(zipf_or_tau.capitalize())
+    plt.ylabel('Average Total Cost')
+    plt.title(f'Average Total Cost vs {zipf_or_tau.capitalize()} for Network Size {network_size}')
+
+    # Show legend
+    plt.legend()
+
+    # Show grid
+    plt.grid(True)
+    type_text = "temporal" if zipf_or_tau == "tau" else "spatial"
+
+    # Save plot with a timestamp in the filename
+    plt.savefig(f"output/{type_text}_x_{zipf_or_tau}_y_average_cost_network_size_{network_size}{add_timestamp('')}.png")
+    # Show plot
+    plt.show()
+
+
+def plot_avg_cost_comparison(df, algorithms):
+    zipf_or_tau = "zipf" if "zipf" in df.columns else "tau"
+
+    # Durchschnittliche Werte für jede Network Size und Algorithmus berechnen
+    avg_df = df.groupby(['network_size', 'algorithm']).mean().reset_index()
+
+    # Plot erstellen
+    plt.figure(figsize=(10, 6))
+
+    # Plot für jeden Algorithmus in der Liste
+    for algorithm in algorithms:
+        filtered_df = avg_df[avg_df['algorithm'] == algorithm]
+        plt.plot(filtered_df['network_size'], filtered_df['total_cost'], label=algorithm.capitalize(), marker='o')
 
     # Achsenbeschriftungen und Titel
     plt.xlabel('Network Size')
     plt.ylabel('Average Total Cost')
-    plt.title('Average Total Cost Comparison: Lazy vs Sliding')
+    plt.title('Average Total Cost Comparison')
 
     # Legende anzeigen
     plt.legend()
 
-    # Logarithmische Skala auf der y-Achse setzen
-    # plt.yscale('log')
-
     # Grid anzeigen
     plt.grid(True)
-    plt.savefig(f"output/x_network_size_y_average_cost_with_lazy{with_lazy}{add_timestamp("")}.png")
+
+    type_text = "temporal" if zipf_or_tau == "tau" else "spatial"
+    plt.savefig(
+        f"output/{type_text}_x_network_size_y_average_cost_with_algorithms_{'_'.join(algorithms)}_{add_timestamp('')}.png")
 
     # Plot anzeigen
     plt.show()
 
 
-def plot_cost_ratio(df, network_size, cost_type1, cost_type2):
+def plot_cost_ratio(df, network_size, cost_type1, cost_type2, algorithms):
     # Filtere das DataFrame für die angegebene network_size
     filtered_df = df[df['network_size'] == network_size]
 
@@ -659,14 +746,19 @@ def plot_cost_ratio(df, network_size, cost_type1, cost_type2):
         print(f"No data available for network size {network_size}")
         return
 
-    # Berechne das Kostenverhältnis
-    cost_ratio = filtered_df[cost_type1] / filtered_df[cost_type2]
-
     # Plot erstellen
     plt.figure(figsize=(10, 6))
 
-    # Plot für das Kostenverhältnis
-    plt.plot(filtered_df['tau'], cost_ratio, label=f'{cost_type1}/{cost_type2}', marker='o')
+    # Plot für das Kostenverhältnis für jeden Algorithmus in der Liste
+    for algorithm in algorithms:
+        algorithm_df = filtered_df[filtered_df['algorithm'] == algorithm]
+
+        if not algorithm_df.empty:
+            # Berechne das Kostenverhältnis
+            cost_ratio = algorithm_df[cost_type1] / algorithm_df[cost_type2]
+
+            # Plot für das Kostenverhältnis
+            plt.plot(algorithm_df['tau'], cost_ratio, label=f'{algorithm} {cost_type1}/{cost_type2}', marker='o')
 
     # Achsenbeschriftungen und Titel
     plt.xlabel('Tau')
@@ -821,7 +913,11 @@ if __name__ == '__main__':
     generate_temporal = False
 
     # Compute simulation booleans
-    run_simulation = True
+    run_simulation = False
+
+    # Plot graphs boolean
+    plot_temporal = True
+    plot_spatial = False
 
     # Plotting variables
     log_scale = True  # True if results should be plotted with logarithmic scale
@@ -864,6 +960,8 @@ if __name__ == '__main__':
         print(f"Communication requests are taken from the folder '{temporal_sequences_folder}'\n.")
 
     # Run simulations on datasets - results are saved in a csv (see path) and can be used multiple times
+    temporal_output_path = "output/temporal_results_20240529_210645.csv"
+    spatial_output_path = "output/spatial_results_20240529_231840.csv"
     if run_simulation:
         '''test_main()'''  # runs simulation of sample.csv
         '''real_data_main(log_scale, average)'''  # runs simulations on all real traces in /csv
@@ -877,27 +975,46 @@ if __name__ == '__main__':
                                                       sliding_window_sizes=sliding_window_size_list,
                                                       sliding_offset_percentage_list=sliding_offset_percentages)
         # pass
-    else:
-        spatial_output_path = ""  # Add path of desired simulation
-        temporal_output_path = ""
+    # Add path of desired simulation
+
+    temporal_df = pd.read_csv(temporal_output_path)
+    spatial_df = pd.read_csv(spatial_output_path)
 
     # Evaluate and generate plots
     # Evaluate performance of communication sequences of different localities
-    # temporal_df = pd.read_csv("output/results.csv")
-    # temporal_df = pd.read_csv(temporal_output_path)
-    # plot_x_network_size_y_total_cost(temporal_df, log_scale)
-    # plot_x_network_size_y_average_cost(temporal_df, log_scale)
-    # plot_x_network_size_y_total_cost(temporal_df, not log_scale)
-    # plot_x_network_size_y_average_cost(temporal_df, not log_scale)
-    # plot_x_tau_y_total_cost(temporal_df, 100)
-    # plot_x_tau_y_total_cost(temporal_df, 200)
-    # plot_x_tau_y_total_cost(temporal_df, 300)
-    # plot_x_tau_y_total_cost(temporal_df, 400)
-    #
-    # plot_avg_cost_comparison(temporal_df, True)
-    # plot_avg_cost_comparison(temporal_df, False)
-    #
+    plot_x_network_size_y_total_cost(temporal_df, log_scale)
+    plot_x_network_size_y_total_cost(temporal_df, not log_scale)
+    if average:
+        plot_x_network_size_y_average_cost(temporal_df, log_scale)
+        plot_x_network_size_y_average_cost(temporal_df, not log_scale)
+
+    plot_x_zipf_or_tau_y_total_cost(temporal_df, 1000)
+    # plot_x_zipf_or_tau_y_total_cost(temporal_df, 200)
+    # plot_x_zipf_or_tau_y_total_cost(temporal_df, 300)
+    # plot_x_zipf_or_tau_y_total_cost(temporal_df, 400)
+
+    plot_x_zipf_or_tau_y_average_cost(temporal_df, 1000)
+
+    plot_avg_cost_comparison(temporal_df, ["lazy", "sliding", "sliding_no_reset"])
+    plot_avg_cost_comparison(temporal_df, ["sliding", "sliding_no_reset"])
+
     # plot_cost_ratio(temporal_df, 100, "total_cost_lazy", "total_cost_splaynet")
+
+    # plot_cost_ratio(temporal_df, 1000, "total_cost", "routing_cost", ["lazy", "sliding", "sliding_no_reset"])
+
+    # Spatial
+    plot_x_network_size_y_total_cost(spatial_df, log_scale)
+    plot_x_network_size_y_total_cost(spatial_df, not log_scale)
+
+    if average:
+        plot_x_network_size_y_average_cost(spatial_df, log_scale)
+        plot_x_network_size_y_average_cost(spatial_df, not log_scale)
+
+    plot_x_zipf_or_tau_y_total_cost(spatial_df, 1000)
+    plot_x_zipf_or_tau_y_average_cost(spatial_df, 1000)
+
+    plot_avg_cost_comparison(spatial_df, ["lazy", "sliding", "sliding_no_reset"])
+    plot_avg_cost_comparison(spatial_df, ["sliding", "sliding_no_reset"])
 
     # main_temporal(log_scale, average)
     # main(log_scale, average)
