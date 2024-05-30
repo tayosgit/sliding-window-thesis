@@ -7,14 +7,13 @@ from topology.CommunicationRequest import CommunicationRequest
 def window_iteration(topology: SplayNetwork, sequence_slice: [CommunicationRequest]):
     # Zählt die Male die das netzwerk angepasst wurde
     total_adjustment_cost = 0
-    pre_adjustment_cost = 0
+    # pre_adjustment_cost = 0
     for request in sequence_slice:
         u = request.get_source()
         v = request.get_destination()
         pre_adjustment_cost = topology.get_adjustment_cost()
         topology.commute(u, v)
         if topology.get_adjustment_cost() > pre_adjustment_cost:  # Ist adjustment cost größer geworden ^= Adjustment passiert?
-            pre_adjustment_cost = topology.get_adjustment_cost()
             total_adjustment_cost += 1
     return topology, total_adjustment_cost
 
@@ -38,6 +37,7 @@ def splaynet(topology: SplayNetwork, communication_sq: [CommunicationRequest]) -
         u = request.get_source()
         v = request.get_destination()
 
+        if u == v: continue
         topology.commute(u, v)
         # topology.print_tree(topology.root)
 
@@ -55,8 +55,8 @@ def lazy_splaynet(topology: SplayNetwork, communication_sq: [CommunicationReques
     total_routing_cost = 0
     epoch_cost = 0
 
-    virtual_topology = copy.deepcopy(topology)
-    # virtual_topology = topology
+    # virtual_topology = copy.deepcopy(topology)
+    virtual_topology = topology
 
     accumulated_cost = 0
     previous_cost = 0
@@ -64,7 +64,7 @@ def lazy_splaynet(topology: SplayNetwork, communication_sq: [CommunicationReques
     for i, request in enumerate(communication_sq):
         u = request.get_source()
         v = request.get_destination()
-
+        if u == v: continue
         virtual_topology.commute(u, v)
         accumulated_cost = virtual_topology.get_routing_cost()
         # accumulated_cost = virtual_topology.get_routing_cost() + virtual_topology.get_adjustment_cost()
@@ -150,15 +150,17 @@ def variable_sliding_window_splaynet(initial_topology, communication_sq, window_
     total_adjustment_cost = 0
     total_routing_cost = 0
 
-    virtual_topology = initial_topology
-    resulting_topology = initial_topology  # oder None
+    # virtual_topology = initial_topology
+    virtual_topology = copy.deepcopy(initial_topology)
+    resulting_topology = None
+    # resulting_topology = initial_topology  # oder None
 
     previous_routing_cost = 0
 
     for i, request in enumerate(communication_sq):
         u = request.get_source()
         v = request.get_destination()
-
+        if u == v: continue
         virtual_topology.commute(u, v)
 
         # Option 1 - take routing costs before commute()
@@ -171,12 +173,14 @@ def variable_sliding_window_splaynet(initial_topology, communication_sq, window_
         total_routing_cost += current_routing_cost
 
         if i % slide_offset == 0 and i >= window_size:
+            resulting_topology = copy.deepcopy(initial_topology)
             resulting_topology, adjustment_cost = window_iteration(resulting_topology,
                                                                    communication_sq[max(0, i - window_size):i])
             total_cost += adjustment_cost
             total_adjustment_cost += adjustment_cost
-            virtual_topology = initial_topology
-            resulting_topology = initial_topology
+            virtual_topology = copy.deepcopy(initial_topology)
+            # virtual_topology = initial_topology
+            # resulting_topology = initial_topology
 
     return resulting_topology, total_cost, total_adjustment_cost, total_routing_cost
 
@@ -189,8 +193,8 @@ def variable_sliding_window_splaynet_no_reset(initial_topology, communication_sq
 
     virtual_topology = copy.deepcopy(initial_topology)
     # virtual_topology = initial_topology
-    resulting_topology = initial_topology  # oder None
-
+    # resulting_topology = None  # oder None
+    resulting_topology = copy.deepcopy(initial_topology)
     previous_routing_cost = 0
 
     for i, request in enumerate(communication_sq):
@@ -231,7 +235,7 @@ def sliding_window_splaynet(initial_topology: SplayNetwork, communication_sq: [C
     for i, request in enumerate(communication_sq):
         u = request.get_source()
         v = request.get_destination()
-
+        if u == v: continue
         virtual_topology.commute(u, v)
         # print(f"Baum bei Iteration {i}")
         # virtual_topology.print_tree(virtual_topology.root)
@@ -258,7 +262,7 @@ def sliding_window_splaynet_helper(initial_topology: SplayNetwork, communication
     for i, request in enumerate(communication_sq):
         u = request.get_source()
         v = request.get_destination()
-
+        if u == v: continue
         virtual_topology.commute(u, v)
         # print(f"Baum bei Iteration {i}")
         # virtual_topology.print_tree(virtual_topology.root)

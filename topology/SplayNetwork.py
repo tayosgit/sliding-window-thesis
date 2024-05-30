@@ -57,8 +57,8 @@ class SplayNetwork:
             new_LCA = self.splay_wrapper(common_ancestor, node_u)
         else:
             new_LCA = self.splay_wrapper(self.root, node_u)
-        if node_u == node_v:
-            raise Exception("gleiche Knoten kommunizieren")
+        # if node_u == node_v:
+        #     raise Exception("gleiche Knoten kommunizieren")
         if node_u > node_v:
             self.splay_wrapper(new_LCA.left, node_v)
         if node_u < node_v:

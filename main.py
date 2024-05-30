@@ -64,10 +64,10 @@ def generate_sequence(name: str, nodes: [int], parameters: [int], length: int):
 
         for n in nodes:
             for param in parameters:
-                temporal_requests = generate_spatial_sequence(n, length, param)
+                spatial_requests = generate_spatial_sequence(n, length, param)
                 filename = f"data_{param}_{n}.csv"
                 pathname = os.path.join(folder, filename)
-                temporal_requests.to_csv(pathname, index=False)
+                spatial_requests.to_csv(pathname, index=False)
 
     else:
         folder = None
@@ -95,17 +95,75 @@ def generate_temporal_sequence(nodes, tau, length):
 
 def generate_spatial_sequence(nodes, length, zipf_param):
     zipf_distribution = np.random.zipf(a=zipf_param, size=length)
-
     zipf_distribution = np.mod(zipf_distribution - 1, nodes) + 1
 
     src_nodes = np.random.randint(1, nodes + 1, size=length)
     dst_nodes = zipf_distribution
 
+    for i in range(length):
+        while dst_nodes[i] == src_nodes[i]:
+            dst_nodes[i] = np.random.randint(1, nodes + 1)
+
     df = pd.DataFrame({'src': src_nodes, 'dst': dst_nodes})
     return df
 
 
+# def generate_spatial_sequence(nodes, length, zipf_param):
+#     zipf_distribution = np.random.zipf(a=zipf_param, size=length)
+#
+#     zipf_distribution = np.mod(zipf_distribution - 1, nodes) + 1
+#
+#     src_nodes = np.random.randint(1, nodes + 1, size=length)
+#     dst_nodes = zipf_distribution
+#
+#     df = pd.DataFrame({'src': src_nodes, 'dst': dst_nodes})
+#     return df
+
+
 # Simulation runners
+def run_simulation_splaynet(nodes, sigma):
+    network = SplayNetwork()
+    network.insert_balanced_BST(nodes)
+
+    _, total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet = splaynet(network, sigma)
+    splaynet_cost_results = [total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet]
+
+    return splaynet_cost_results
+
+
+def run_simulation_lazy(nodes, sigma, alpha_value):
+    network = SplayNetwork()
+    network.insert_balanced_BST(nodes)
+
+    _, total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy = lazy_splaynet(network, sigma,
+                                                                                            alpha=alpha_value)
+    lazy_cost_results = [total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy]
+    return lazy_cost_results
+
+
+def run_simulation_sliding(nodes, sigma, window_size, slide_offset):
+    network = SplayNetwork()
+    network.insert_balanced_BST(nodes)
+
+    _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding = variable_sliding_window_splaynet(
+        initial_topology=network, communication_sq=sigma,
+        window_size=window_size, slide_offset=slide_offset)
+    sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding]
+    return sliding_cost_results
+
+
+def run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset):
+    network = SplayNetwork()
+    network.insert_balanced_BST(nodes)
+
+    _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding = variable_sliding_window_splaynet_no_reset(
+        initial_topology=network, communication_sq=sigma,
+        window_size=window_size, slide_offset=slide_offset)
+    sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding]
+    return sliding_cost_results
+
+
+# depr
 def run_simulation_temporal(nodes, tau, network_size, sigma, alpha, window_size):
     # Initialize tree network
     network = SplayNetwork()
@@ -156,6 +214,7 @@ def run_simulation_temporal(nodes, tau, network_size, sigma, alpha, window_size)
     return splaynet_cost_results, lazy_cost_results, sliding_cost_results
 
 
+# depr
 # def run_simulation_temporal(nodes, tau, network_size, sigma, alpha, window_size):
 #     # Initialize tree network
 #     network = SplayNetwork()
@@ -205,7 +264,7 @@ def run_simulation_temporal(nodes, tau, network_size, sigma, alpha, window_size)
 #     # return total_cost_splaynet, total_cost_lazy, total_cost_sliding
 #     return splaynet_cost_results, lazy_cost_results, sliding_cost_results
 
-
+# depr
 def run_simulation_spatial(nodes, zipf, network_size, sigma, alpha, window_size):
     # Initialize tree network
     network = SplayNetwork()
@@ -249,40 +308,151 @@ def run_simulation_spatial(nodes, zipf, network_size, sigma, alpha, window_size)
 
 
 # Result calculating functions - Outputs are stored as csv for easier access for the plotting operations
-def compute_spatial_results(zipf_params, network_size_list, data_folder):  # Ehemals: main(log2, average2)
-    # anhand parameter daten einlesen
-    # zipf_params = ["1.1", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5"]
-    # network_size_list = ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"]
-    # tau_list = ["0.1"]
-    # network_size_list = ["100"]
+def compute_temporal_results(tau_list, network_size_list,
+                             data_folder, lazy_splaynet_alphas,
+                             sliding_window_sizes,
+                             sliding_offset_percentage_list):  # Ehemals: main_compute_temporal(log_scale_2, average_2)
 
     combinations = []
-    results_df = pd.DataFrame(
-        columns=["network_size", "zipf", "total_cost_splaynet", "total_cost_lazy", "total_cost_sliding"])
+    columns = ["network_size", "tau", "algorithm", "adjustment_cost", "routing_cost", "total_cost", "alpha",
+               "window_size", "sliding_offset"]
+    results_df = pd.DataFrame(columns=columns)
 
-    for zipf in zipf_params:
+    for tau in tau_list:
+        for network_size in network_size_list:
+            combinations.append(f"{tau}_{network_size}")
+
+    # Ausgabe der Kombinationen
+    for combination in combinations:
+        tau = float(combination.split("_")[0])
+        network_size = int(combination.split("_")[1])
+        sigma, nodes = csv_to_sequence(f"{data_folder}/data_{combination}.csv")
+
+        print(f"Processing dataset for tau={tau} with {network_size} nodes.")
+
+        print("Running SplayNet algorithm...")
+        results_splaynet = run_simulation_splaynet(nodes, sigma)
+        # push to df
+        results_df.loc[len(results_df)] = [network_size, tau, "splaynet", results_splaynet[1], results_splaynet[2],
+                                           results_splaynet[0], None, None, None]
+
+        for alpha_value in lazy_splaynet_alphas:
+            print(f"Running Lazy SplayNet algorithm... with alpha={alpha_value}")
+            results_lazy = run_simulation_lazy(nodes, sigma, alpha_value)
+            # push to df
+            results_df.loc[len(results_df)] = [network_size, tau, "lazy", results_lazy[1], results_lazy[2],
+                                               results_lazy[0], alpha_value, None, None]
+
+        for window_size in sliding_window_sizes:
+            sliding_offset_list = [int(window_size * p) for p in sliding_offset_percentage_list]
+            for slide_offset in sliding_offset_list:
+                print(
+                    f"Running SlidingWindow algorithm... with window size={window_size} and slide_offset={slide_offset}")
+                results_sliding = run_simulation_sliding(nodes, sigma, window_size, slide_offset)
+                results_df.loc[len(results_df)] = [network_size, tau, "sliding", results_sliding[1], results_sliding[2],
+                                                   results_sliding[0], None, window_size, slide_offset]
+
+                print(
+                    f"Running SlidingWindow no reset algorithm... with window size={window_size} and slide_offset={slide_offset}")
+                results_sliding_no_reset = run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset)
+                results_df.loc[len(results_df)] = [network_size, tau, "sliding_no_reset", results_sliding_no_reset[1],
+                                                   results_sliding_no_reset[2],
+                                                   results_sliding_no_reset[0], None, window_size, slide_offset]
+
+    output_path = f"output/{add_timestamp("temporal_results")}.csv"
+    results_df.to_csv(output_path)
+    return output_path
+
+
+def compute_spatial_results(zipf_list, network_size_list, data_folder, lazy_splaynet_alphas, sliding_window_sizes,
+                            sliding_offset_percentage_list):
+    combinations = []
+    columns = ["network_size", "zipf", "algorithm", "adjustment_cost", "routing_cost", "total_cost", "alpha",
+               "window_size", "sliding_offset"]
+    results_df = pd.DataFrame(columns=columns)
+
+    for zipf in zipf_list:
         for network_size in network_size_list:
             combinations.append(f"{zipf}_{network_size}")
 
-    # All variable combinations
+    # Ausgabe der Kombinationen
     for combination in combinations:
         zipf = float(combination.split("_")[0])
         network_size = int(combination.split("_")[1])
-        # sigma, nodes = csv_to_sequence(f"csv_spatial/data_{combination}.csv")
         sigma, nodes = csv_to_sequence(f"{data_folder}/data_{combination}.csv")
-        total_cost_splaynet, total_cost_lazy, total_cost_sliding = run_simulation_spatial(nodes, zipf, network_size,
-                                                                                          sigma, 100,
-                                                                                          100)
-        results_df.loc[len(results_df)] = [network_size, zipf, total_cost_splaynet, total_cost_lazy, total_cost_sliding]
+
+        print(f"Processing dataset for zipf={zipf} with {network_size} nodes.")
+
+        print("Running SplayNet algorithm...")
+        results_splaynet = run_simulation_splaynet(nodes, sigma)
+        # push to df
+        results_df.loc[len(results_df)] = [network_size, zipf, "splaynet", results_splaynet[1], results_splaynet[2],
+                                           results_splaynet[0], None, None, None]
+
+        for alpha_value in lazy_splaynet_alphas:
+            print(f"Running Lazy SplayNet algorithm... with alpha={alpha_value}")
+            results_lazy = run_simulation_lazy(nodes, sigma, alpha_value)
+            # push to df
+            results_df.loc[len(results_df)] = [network_size, zipf, "lazy", results_lazy[1], results_lazy[2],
+                                               results_lazy[0], alpha_value, None, None]
+
+        for window_size in sliding_window_sizes:
+            sliding_offset_list = [int(window_size * p) for p in sliding_offset_percentage_list]
+            for slide_offset in sliding_offset_list:
+                print(
+                    f"Running SlidingWindow algorithm... with window size={window_size} and slide_offset={slide_offset}")
+                results_sliding = run_simulation_sliding(nodes, sigma, window_size, slide_offset)
+                results_df.loc[len(results_df)] = [network_size, zipf, "sliding", results_sliding[1], results_sliding[2],
+                                                   results_sliding[0], None, window_size, slide_offset]
+
+                print(
+                    f"Running SlidingWindow no reset algorithm... with window size={window_size} and slide_offset={slide_offset}")
+                results_sliding_no_reset = run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset)
+                results_df.loc[len(results_df)] = [network_size, zipf, "sliding_no_reset", results_sliding_no_reset[1],
+                                                   results_sliding_no_reset[2],
+                                                   results_sliding_no_reset[0], None, window_size, slide_offset]
 
     output_path = f"output/{add_timestamp("spatial_results")}.csv"
     results_df.to_csv(output_path)
     return output_path
 
 
-def compute_temporal_results(tau_list, network_size_list,
-                             data_folder, lazy_splaynet_alpha,
-                             sliding_window_size):  # Ehemals: main_compute_temporal(log_scale_2, average_2)
+# depr
+# def compute_spatial_results(zipf_params, network_size_list, data_folder):  # Ehemals: main(log2, average2)
+#     # anhand parameter daten einlesen
+#     # zipf_params = ["1.1", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5"]
+#     # network_size_list = ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"]
+#     # tau_list = ["0.1"]
+#     # network_size_list = ["100"]
+#
+#     combinations = []
+#     results_df = pd.DataFrame(
+#         columns=["network_size", "zipf", "total_cost_splaynet", "total_cost_lazy", "total_cost_sliding"])
+#
+#     for zipf in zipf_params:
+#         for network_size in network_size_list:
+#             combinations.append(f"{zipf}_{network_size}")
+#
+#     # All variable combinations
+#     for combination in combinations:
+#         zipf = float(combination.split("_")[0])
+#         network_size = int(combination.split("_")[1])
+#         # sigma, nodes = csv_to_sequence(f"csv_spatial/data_{combination}.csv")
+#         sigma, nodes = csv_to_sequence(f"{data_folder}/data_{combination}.csv")
+#         total_cost_splaynet, total_cost_lazy, total_cost_sliding = run_simulation_spatial(nodes, zipf, network_size,
+#                                                                                           sigma, 100,
+#                                                                                           100)
+#         results_df.loc[len(results_df)] = [network_size, zipf, total_cost_splaynet, total_cost_lazy, total_cost_sliding]
+#
+#     output_path = f"output/{add_timestamp("spatial_results")}.csv"
+#     results_df.to_csv(output_path)
+#     return output_path
+
+
+# depr
+def compute_temporal_results_old(tau_list, network_size_list,
+                                 data_folder, lazy_splaynet_alpha,
+                                 sliding_window_size):  # Ehemals: main_compute_temporal(log_scale_2, average_2)
     # Für temporal
     # anhand parameter daten einlesen
     # tau_list = ["0.1", "0.2", "0.3", "0.4", "0.5", "0.5", "0.6", "0.7", "0.8", "0.9"]
@@ -295,6 +465,8 @@ def compute_temporal_results(tau_list, network_size_list,
         columns=["network_size", "tau", "adjustment_cost_splaynet", "routing_cost_splaynet", "total_cost_splaynet",
                  "adjustment_cost_lazy", "routing_cost_lazy", "total_cost_lazy", "adjustment_cost_sliding",
                  "routing_cost_sliding", "total_cost_sliding"])
+
+    # columns2= ["network_size", "tau", "algorithm", "adjustment_cost", "routing_cost", "total_cost", "alpha", "window_size", "sliding_offset"]
 
     # "adjustment_cost_splaynet", "routing_cost_splaynet", "total_cost_splaynet"
     # "adjustment_cost_splaynet<a-value>", "routing_cost_splaynet<a-value>", "total_cost_splaynet<a-value>"
@@ -637,8 +809,11 @@ def real_data_main(log_scale, average):
 
 if __name__ == '__main__':
     # Algorithm specific variables
-    threshold_alpha = 100  # Lazy SplayNet
-    sliding_window_size = 100  # Sliding Window
+    # threshold_alpha = 100  # Lazy SplayNet
+    threshold_alpha_list = [100]
+    # sliding_window_size = 100  # Sliding Window
+    sliding_window_size_list = [100]
+    sliding_offset_percentages = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90]
 
     # Bool values and variables, that determine which parts of the workflow are executed
     # Generator booleans
@@ -660,21 +835,21 @@ if __name__ == '__main__':
 
     sequence_length = 100000
 
-    # node_range = (100, 1100, 100)  # can either a single value [size] or as a tuple (start, stop, step)
-    node_range = [1000]
+    # node_ranges = (100, 1100, 100)  # can either a single value [size] or as a tuple (start, stop, step)
+    node_ranges = [1000]
 
-    if len(node_range) == 1:
-        node_list = [node_range[0]]
-    elif 1 < len(node_range) < 4:
-        node_list = list(range(*node_range))
+    if len(node_ranges) == 1:
+        size_list = [node_ranges[0]]
+    elif 1 < len(node_ranges) < 4:
+        size_list = list(range(*node_ranges))
     else:
         print("Invalid node range")
-        node_list = []
+        size_list = []
 
     # Generate communication sequence datasets
     if generate_spatial:
         print("Generating communication sequences for different spatial localities ...")
-        spatial_sequences_folder = generate_sequence('spatial', node_list, zipf_parameters, sequence_length)
+        spatial_sequences_folder = generate_sequence('spatial', size_list, zipf_parameters, sequence_length)
         print(f"Completed. Result(s) can be found in the folder {spatial_sequences_folder}. \n")
     else:
         spatial_sequences_folder = 'spatial_data'
@@ -682,7 +857,7 @@ if __name__ == '__main__':
 
     if generate_temporal:
         print("Generating temporal sequences for different temporal localities ...")
-        temporal_sequences_folder = generate_sequence('temporal', node_list, tau_parameters, sequence_length)
+        temporal_sequences_folder = generate_sequence('temporal', size_list, tau_parameters, sequence_length)
         print(f"Completed. Result(s) can be found in the folder {temporal_sequences_folder}.\n")
     else:
         temporal_sequences_folder = 'temporal_data'
@@ -692,11 +867,16 @@ if __name__ == '__main__':
     if run_simulation:
         '''test_main()'''  # runs simulation of sample.csv
         '''real_data_main(log_scale, average)'''  # runs simulations on all real traces in /csv
-        # spatial_output_path = compute_spatial_results(zipf_parameters, node_list, spatial_sequences_folder)
-        temporal_output_path = compute_temporal_results(tau_parameters, node_list, temporal_sequences_folder,
-                                                        lazy_splaynet_alpha=threshold_alpha,
-                                                        sliding_window_size=sliding_window_size)
-        pass
+        # temporal_output_path = compute_temporal_results(tau_parameters, size_list, temporal_sequences_folder,
+        #                                                 lazy_splaynet_alphas=threshold_alpha_list,
+        #                                                 sliding_window_sizes=sliding_window_size_list,
+        #                                                 sliding_offset_percentage_list=sliding_offset_percentages)
+
+        spatial_output_path = compute_spatial_results(zipf_parameters, size_list, spatial_sequences_folder,
+                                                      lazy_splaynet_alphas=threshold_alpha_list,
+                                                      sliding_window_sizes=sliding_window_size_list,
+                                                      sliding_offset_percentage_list=sliding_offset_percentages)
+        # pass
     else:
         spatial_output_path = ""  # Add path of desired simulation
         temporal_output_path = ""
