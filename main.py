@@ -900,24 +900,34 @@ def real_data_main(log_scale, average):
 
 
 if __name__ == '__main__':
+    # tau = [100]
+    # networksize = [1000]
+    # windowsize = 100
+
     # Algorithm specific variables
-    # threshold_alpha = 100  # Lazy SplayNet
+    # Lazy SplayNet
+    # threshold_alpha_list = [50, 100]
     threshold_alpha_list = [100]
-    # sliding_window_size = 100  # Sliding Window
+    # Sliding Window
     sliding_window_size_list = [100]
-    sliding_offset_percentages = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90]
+    sliding_offset_percentages = [0.5, 1.0]
+    # sliding_offset_percentages = [0.25, 0.5, 0.75, 1.0]
+    # sliding_offset_percentages = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90, 1.0]
 
     # Bool values and variables, that determine which parts of the workflow are executed
     # Generator booleans
     generate_spatial = False  # Set variables to True, if the datasets should be generated
     generate_temporal = False
+    node_ranges = [1000]  # can either a single value [size] or as a tuple (start, stop, step) e.g. (100, 1100, 100)
+    sequence_length = 100000
 
     # Compute simulation booleans
-    run_simulation = False
+    run_simulation = True
 
     # Plot graphs boolean
+    plot = False
     plot_temporal = True
-    plot_spatial = False
+    plot_spatial = True
 
     # Plotting variables
     log_scale = True  # True if results should be plotted with logarithmic scale
@@ -928,11 +938,6 @@ if __name__ == '__main__':
     # Parameters - can be adjusted as desired
     zipf_parameters = [1.1, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
     tau_parameters = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-
-    sequence_length = 100000
-
-    # node_ranges = (100, 1100, 100)  # can either a single value [size] or as a tuple (start, stop, step)
-    node_ranges = [1000]
 
     if len(node_ranges) == 1:
         size_list = [node_ranges[0]]
@@ -960,61 +965,66 @@ if __name__ == '__main__':
         print(f"Communication requests are taken from the folder '{temporal_sequences_folder}'\n.")
 
     # Run simulations on datasets - results are saved in a csv (see path) and can be used multiple times
-    temporal_output_path = "output/temporal_results_20240529_210645.csv"
-    spatial_output_path = "output/spatial_results_20240529_231840.csv"
     if run_simulation:
         '''test_main()'''  # runs simulation of sample.csv
         '''real_data_main(log_scale, average)'''  # runs simulations on all real traces in /csv
-        # temporal_output_path = compute_temporal_results(tau_parameters, size_list, temporal_sequences_folder,
-        #                                                 lazy_splaynet_alphas=threshold_alpha_list,
-        #                                                 sliding_window_sizes=sliding_window_size_list,
-        #                                                 sliding_offset_percentage_list=sliding_offset_percentages)
+        temporal_output_path = compute_temporal_results(tau_parameters, size_list, temporal_sequences_folder,
+                                                        lazy_splaynet_alphas=threshold_alpha_list,
+                                                        sliding_window_sizes=sliding_window_size_list,
+                                                        sliding_offset_percentage_list=sliding_offset_percentages)
 
         spatial_output_path = compute_spatial_results(zipf_parameters, size_list, spatial_sequences_folder,
                                                       lazy_splaynet_alphas=threshold_alpha_list,
                                                       sliding_window_sizes=sliding_window_size_list,
                                                       sliding_offset_percentage_list=sliding_offset_percentages)
         # pass
-    # Add path of desired simulation
+    else:
+        # Add path of desired simulation
+        # temporal_output_path = "output/temporal_results_20240529_210645.csv"
+        temporal_output_path = "output/temporal_results_20240603_161420.csv"
+        # spatial_output_path = "output/spatial_results_20240529_231840.csv"
+        spatial_output_path = "output/spatial_results_20240603_162414.csv"
 
     temporal_df = pd.read_csv(temporal_output_path)
     spatial_df = pd.read_csv(spatial_output_path)
 
     # Evaluate and generate plots
-    # Evaluate performance of communication sequences of different localities
-    plot_x_network_size_y_total_cost(temporal_df, log_scale)
-    plot_x_network_size_y_total_cost(temporal_df, not log_scale)
-    if average:
-        plot_x_network_size_y_average_cost(temporal_df, log_scale)
-        plot_x_network_size_y_average_cost(temporal_df, not log_scale)
+    if plot:
+        # Evaluate performance of communication sequences of different localities
+        plot_x_network_size_y_total_cost(temporal_df, log_scale)
+        plot_x_network_size_y_total_cost(temporal_df, not log_scale)
 
-    plot_x_zipf_or_tau_y_total_cost(temporal_df, 1000)
-    # plot_x_zipf_or_tau_y_total_cost(temporal_df, 200)
-    # plot_x_zipf_or_tau_y_total_cost(temporal_df, 300)
-    # plot_x_zipf_or_tau_y_total_cost(temporal_df, 400)
+        if average:
+            plot_x_network_size_y_average_cost(temporal_df, log_scale)
+            plot_x_network_size_y_average_cost(temporal_df, not log_scale)
 
-    plot_x_zipf_or_tau_y_average_cost(temporal_df, 1000)
+        plot_x_zipf_or_tau_y_total_cost(temporal_df, 1000)
+        # plot_x_zipf_or_tau_y_total_cost(temporal_df, 200)
+        # plot_x_zipf_or_tau_y_total_cost(temporal_df, 300)
+        # plot_x_zipf_or_tau_y_total_cost(temporal_df, 400)
 
-    plot_avg_cost_comparison(temporal_df, ["lazy", "sliding", "sliding_no_reset"])
-    plot_avg_cost_comparison(temporal_df, ["sliding", "sliding_no_reset"])
+        plot_x_zipf_or_tau_y_average_cost(temporal_df, 1000)
 
-    # plot_cost_ratio(temporal_df, 100, "total_cost_lazy", "total_cost_splaynet")
+        plot_avg_cost_comparison(temporal_df, ["lazy", "sliding", "sliding_no_reset"])
+        plot_avg_cost_comparison(temporal_df, ["sliding", "sliding_no_reset"])
 
-    # plot_cost_ratio(temporal_df, 1000, "total_cost", "routing_cost", ["lazy", "sliding", "sliding_no_reset"])
+        # plot_cost_ratio(temporal_df, 100, "total_cost_lazy", "total_cost_splaynet")
 
-    # Spatial
-    plot_x_network_size_y_total_cost(spatial_df, log_scale)
-    plot_x_network_size_y_total_cost(spatial_df, not log_scale)
+        # plot_cost_ratio(temporal_df, 1000, "total_cost", "routing_cost", ["lazy", "sliding", "sliding_no_reset"])
 
-    if average:
-        plot_x_network_size_y_average_cost(spatial_df, log_scale)
-        plot_x_network_size_y_average_cost(spatial_df, not log_scale)
+        # Spatial
+        plot_x_network_size_y_total_cost(spatial_df, log_scale)
+        plot_x_network_size_y_total_cost(spatial_df, not log_scale)
 
-    plot_x_zipf_or_tau_y_total_cost(spatial_df, 1000)
-    plot_x_zipf_or_tau_y_average_cost(spatial_df, 1000)
+        if average:
+            plot_x_network_size_y_average_cost(spatial_df, log_scale)
+            plot_x_network_size_y_average_cost(spatial_df, not log_scale)
 
-    plot_avg_cost_comparison(spatial_df, ["lazy", "sliding", "sliding_no_reset"])
-    plot_avg_cost_comparison(spatial_df, ["sliding", "sliding_no_reset"])
+        plot_x_zipf_or_tau_y_total_cost(spatial_df, 1000)
+        plot_x_zipf_or_tau_y_average_cost(spatial_df, 1000)
+
+        plot_avg_cost_comparison(spatial_df, ["lazy", "sliding", "sliding_no_reset"])
+        plot_avg_cost_comparison(spatial_df, ["sliding", "sliding_no_reset"])
 
     # main_temporal(log_scale, average)
     # main(log_scale, average)
@@ -1135,5 +1145,5 @@ if __name__ == '__main__':
     #             plt.xlabel('Source Node')
     #             plt.ylabel('Destination Node')
     #             plt.title(f'Scatter Plot for {os.path.basename(csv_file)}')
-    #             output_name = os.path.join(output_folder, f"scatter_{os.path.basename(csv_file)[:-4]}_{timestamp}.png")
+    #            output_name = os.path.join(output_folder, f"scatter_{os.path.basename(csv_file)[:-4]}_{timestamp}.png")
     #             plt.savefig(output_name)

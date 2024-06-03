@@ -1,6 +1,29 @@
 from topology.Node import Node
 
 
+# class SplayNetwork:
+#     def __init__(self):
+#             self.root = None
+#             self.routing_cost = 0
+#             self.adjustment_cost = 0
+#
+#     def insert_balanced_BST(self, node_list: [int]):
+#         node_list.sort()
+#         k = len(node_list) // 2
+#         self.root = Node(node_list[k])
+#         self.root.left = self.insertion_iteration(node_list[:k], self.root)
+#         self.root.right = self.insertion_iteration(node_list[k + 1:], self.root)
+#
+#     def insertion_iteration(self, node_list: [int], parent: Node):
+#         if len(node_list) == 0:
+#             return None
+#         k = len(node_list) // 2
+#         new_node = Node(node_list[k])
+#         new_node.parent = parent
+#         new_node.left = self.insertion_iteration(node_list[:k], new_node)
+#         new_node.right = self.insertion_iteration(node_list[k + 1:], new_node)
+#         return new_node
+
 class SplayNetwork:
 
     def __init__(self):
