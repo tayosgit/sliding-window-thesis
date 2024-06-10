@@ -326,6 +326,7 @@ def compute_temporal_results(tau_list, network_size_list,
     for combination in combinations:
         tau = float(combination.split("_")[0])
         network_size = int(combination.split("_")[1])
+        # sigma, nodes = csv_to_sequence("data/sample.csv")
         sigma, nodes = csv_to_sequence(f"{data_folder}/data_{combination}.csv")
 
         print(f"Processing dataset for tau={tau} with {network_size} nodes.")
@@ -906,38 +907,37 @@ if __name__ == '__main__':
 
     # Algorithm specific variables
     # Lazy SplayNet
-    # threshold_alpha_list = [50, 100]
     threshold_alpha_list = [100]
+    # threshold_alpha_list = [100]
     # Sliding Window
     sliding_window_size_list = [100]
-    sliding_offset_percentages = [0.5, 1.0]
+    # sliding_offset_percentages = [0.1, 0.9, 1.0]
     # sliding_offset_percentages = [0.25, 0.5, 0.75, 1.0]
-    # sliding_offset_percentages = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90, 1.0]
+    sliding_offset_percentages = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90, 1.0]
 
     # Bool values and variables, that determine which parts of the workflow are executed
     # Generator booleans
     generate_spatial = False  # Set variables to True, if the datasets should be generated
     generate_temporal = False
-    node_ranges = [1000]  # can either a single value [size] or as a tuple (start, stop, step) e.g. (100, 1100, 100)
-    sequence_length = 100000
+    node_ranges = [100]  # can either a single value [size] or as a tuple (start, stop, step) e.g. (100, 1100, 100)
+    sequence_length = 10**6
 
     # Compute simulation booleans
     run_simulation = True
 
     # Plot graphs boolean
     plot = False
-    plot_temporal = True
-    plot_spatial = True
-
-    # Plotting variables
+    plot_temporal = False
+    plot_spatial = False
     log_scale = True  # True if results should be plotted with logarithmic scale
     average = True  # True if average cost should be plotted
     slice_temporal = ([None], [None])  # Variable to slice result as wished: ([network_size_slices], [parameter_slices])
     slice_spatial = ([None], [None])
 
     # Parameters - can be adjusted as desired
-    zipf_parameters = [1.1, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
     tau_parameters = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    # tau_parameters = [0.1, 0.5, 0.9]
+    zipf_parameters = [1.1, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
 
     if len(node_ranges) == 1:
         size_list = [node_ranges[0]]
@@ -977,7 +977,8 @@ if __name__ == '__main__':
                                                       lazy_splaynet_alphas=threshold_alpha_list,
                                                       sliding_window_sizes=sliding_window_size_list,
                                                       sliding_offset_percentage_list=sliding_offset_percentages)
-        # pass
+        # spatial_output_path = "output/spatial_results_20240603_162414.csv"
+        pass
     else:
         # Add path of desired simulation
         # temporal_output_path = "output/temporal_results_20240529_210645.csv"
