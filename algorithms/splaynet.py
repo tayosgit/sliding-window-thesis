@@ -1,5 +1,4 @@
 from topology.Node import Node
-from topology.SplayNetworkOnline import SplayNet
 import copy
 import matplotlib.pyplot as plt
 

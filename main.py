@@ -135,83 +135,83 @@ def run_simulation_lazy(nodes, sigma, alpha_value):
     network = SplayNetwork()
     network.insert_balanced_BST(nodes)
 
-    _, total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy = lazy_splaynet(network, sigma,
+    _, total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy, requests_per_adjustment = lazy_splaynet(network, sigma,
                                                                                             alpha=alpha_value)
-    lazy_cost_results = [total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy]
+    lazy_cost_results = [total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy, requests_per_adjustment]
     return lazy_cost_results
 
 
-def run_simulation_sliding(nodes, sigma, window_size, slide_offset):
+def run_simulation_sliding(nodes, sigma, window_size, slide_offset, alpha):
     network = SplayNetwork()
     network.insert_balanced_BST(nodes)
 
-    _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding = variable_sliding_window_splaynet(
+    _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding, requests_per_adjustment = variable_sliding_window_splaynet(
         initial_topology=network, communication_sq=sigma,
-        window_size=window_size, slide_offset=slide_offset)
-    sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding]
+        window_size=window_size, slide_offset=slide_offset, alpha=alpha)
+    sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding, requests_per_adjustment]
     return sliding_cost_results
 
 
-def run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset):
+def run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset, alpha):
     network = SplayNetwork()
     network.insert_balanced_BST(nodes)
 
-    _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding = variable_sliding_window_splaynet_no_reset(
+    _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding, requests_per_adjustment = variable_sliding_window_splaynet_no_reset(
         initial_topology=network, communication_sq=sigma,
-        window_size=window_size, slide_offset=slide_offset)
-    sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding]
+        window_size=window_size, slide_offset=slide_offset, alpha=alpha)
+    sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding, requests_per_adjustment]
     return sliding_cost_results
 
 
 # depr
-def run_simulation_temporal(nodes, tau, network_size, sigma, alpha, window_size):
-    # Initialize tree network
-    network = SplayNetwork()
-    network.insert_balanced_BST(nodes)
-
-    network_2 = copy.deepcopy(network)
-    network_original = network
-
-    print(f"Processing dataset for tau={tau} with {network_size} nodes.")
-
-    # Apply algorithms, add loop for parameter finetuning here later
-    print("Running SplayNet algorithm...")
-    # _, total_cost_splaynet = splaynet(copy.deepcopy(network), sigma)
-    _, total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet = splaynet(network_original,
-                                                                                                   sigma)
-    splaynet_cost_results = [total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet]
-    network_original = network_2
-
-    print(f"Finished with total cost {total_cost_splaynet}")
-
-    print("Running Lazy SplayNet algorithm...")
-    # _, total_cost_lazy = lazy_splaynet(copy.deepcopy(network), sigma, alpha=alpha)
-    _, total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy = lazy_splaynet(network_original, sigma,
-                                                                                            alpha=alpha)
-    lazy_cost_results = [total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy]
-    network_original = network_2
-
-    print(f"Finished with total cost {total_cost_lazy}")
-
-    # print("Running Sliding Window SplayNet algorithm...")
-    # # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
-    # _, total_cost_sliding = sliding_window_splaynet(network_original, sigma, slide=slide)
-    # # network_original = network
-
-    print("Running Sliding Window SplayNet algorithm...")
-    # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
-    _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding = variable_sliding_window_splaynet(
-        initial_topology=network_original, communication_sq=sigma,
-        window_size=window_size, slide_offset=window_size // 2)
-    sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding]
-    # network_original = network
-
-    print(f"Finished with total cost {total_cost_sliding}")
-
-    # Preparation for plotting
-    # combined_data = [(network_size, (total_cost_splaynet, total_cost_lazy, total_cost_sliding))]
-    # return total_cost_splaynet, total_cost_lazy, total_cost_sliding
-    return splaynet_cost_results, lazy_cost_results, sliding_cost_results
+# def run_simulation_temporal(nodes, tau, network_size, sigma, alpha, window_size):
+#     # Initialize tree network
+#     network = SplayNetwork()
+#     network.insert_balanced_BST(nodes)
+#
+#     network_2 = copy.deepcopy(network)
+#     network_original = network
+#
+#     print(f"Processing dataset for tau={tau} with {network_size} nodes.")
+#
+#     # Apply algorithms, add loop for parameter finetuning here later
+#     print("Running SplayNet algorithm...")
+#     # _, total_cost_splaynet = splaynet(copy.deepcopy(network), sigma)
+#     _, total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet = splaynet(network_original,
+#                                                                                                    sigma)
+#     splaynet_cost_results = [total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet]
+#     network_original = network_2
+#
+#     print(f"Finished with total cost {total_cost_splaynet}")
+#
+#     print("Running Lazy SplayNet algorithm...")
+#     # _, total_cost_lazy = lazy_splaynet(copy.deepcopy(network), sigma, alpha=alpha)
+#     _, total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy = lazy_splaynet(network_original, sigma,
+#                                                                                             alpha=alpha)
+#     lazy_cost_results = [total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy]
+#     network_original = network_2
+#
+#     print(f"Finished with total cost {total_cost_lazy}")
+#
+#     # print("Running Sliding Window SplayNet algorithm...")
+#     # # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
+#     # _, total_cost_sliding = sliding_window_splaynet(network_original, sigma, slide=slide)
+#     # # network_original = network
+#
+#     print("Running Sliding Window SplayNet algorithm...")
+#     # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
+#     _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding = variable_sliding_window_splaynet(
+#         initial_topology=network_original, communication_sq=sigma,
+#         window_size=window_size, slide_offset=window_size // 2)
+#     sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding]
+#     # network_original = network
+#
+#     print(f"Finished with total cost {total_cost_sliding}")
+#
+#     # Preparation for plotting
+#     # combined_data = [(network_size, (total_cost_splaynet, total_cost_lazy, total_cost_sliding))]
+#     # return total_cost_splaynet, total_cost_lazy, total_cost_sliding
+#     return splaynet_cost_results, lazy_cost_results, sliding_cost_results
 
 
 # depr
@@ -308,14 +308,12 @@ def run_simulation_spatial(nodes, zipf, network_size, sigma, alpha, window_size)
 
 
 # Result calculating functions - Outputs are stored as csv for easier access for the plotting operations
-def compute_temporal_results(tau_list, network_size_list,
-                             data_folder, lazy_splaynet_alphas,
-                             sliding_window_sizes,
-                             sliding_offset_percentage_list):  # Ehemals: main_compute_temporal(log_scale_2, average_2)
+def compute_temporal_results(tau_list, network_size_list, data_folder, lazy_splaynet_alphas, sliding_window_sizes,
+                             sliding_offset_percentage_list):
 
     combinations = []
     columns = ["network_size", "tau", "algorithm", "adjustment_cost", "routing_cost", "total_cost", "alpha",
-               "window_size", "sliding_offset"]
+               "window_size", "sliding_offset", "request_counter", "requests_per_adjustment"]
     results_df = pd.DataFrame(columns=columns)
 
     for tau in tau_list:
@@ -335,30 +333,32 @@ def compute_temporal_results(tau_list, network_size_list,
         results_splaynet = run_simulation_splaynet(nodes, sigma)
         # push to df
         results_df.loc[len(results_df)] = [network_size, tau, "splaynet", results_splaynet[1], results_splaynet[2],
-                                           results_splaynet[0], None, None, None]
+                                           results_splaynet[0], None, None, None, None, None]
 
         for alpha_value in lazy_splaynet_alphas:
             print(f"Running Lazy SplayNet algorithm... with alpha={alpha_value}")
             results_lazy = run_simulation_lazy(nodes, sigma, alpha_value)
+            lazy_rpa = sum(results_lazy[3]) / len(results_lazy[3])
             # push to df
             results_df.loc[len(results_df)] = [network_size, tau, "lazy", results_lazy[1], results_lazy[2],
-                                               results_lazy[0], alpha_value, None, None]
+                                               results_lazy[0], alpha_value, None, None, results_lazy[3], lazy_rpa]
 
-        for window_size in sliding_window_sizes:
-            sliding_offset_list = [int(window_size * p) for p in sliding_offset_percentage_list]
-            for slide_offset in sliding_offset_list:
-                print(
-                    f"Running SlidingWindow algorithm... with window size={window_size} and slide_offset={slide_offset}")
-                results_sliding = run_simulation_sliding(nodes, sigma, window_size, slide_offset)
-                results_df.loc[len(results_df)] = [network_size, tau, "sliding", results_sliding[1], results_sliding[2],
-                                                   results_sliding[0], None, window_size, slide_offset]
+            for window_size in sliding_window_sizes:
+                sliding_offset_list = [int(window_size * p) for p in sliding_offset_percentage_list]
+                for slide_offset in sliding_offset_list:
+                    print(f"Running SlidingWindow algorithm... with window size={window_size} and slide_offset={slide_offset}")
+                    results_sliding = run_simulation_sliding(nodes, sigma, window_size, slide_offset, alpha_value)
+                    sliding_rpa = sum(results_sliding[3]) / len(results_sliding[3])
+                    results_df.loc[len(results_df)] = [network_size, tau, "sliding", results_sliding[1], results_sliding[2],
+                                                       results_sliding[0], alpha_value, window_size, slide_offset, results_sliding[3], sliding_rpa]
 
-                print(
-                    f"Running SlidingWindow no reset algorithm... with window size={window_size} and slide_offset={slide_offset}")
-                results_sliding_no_reset = run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset)
-                results_df.loc[len(results_df)] = [network_size, tau, "sliding_no_reset", results_sliding_no_reset[1],
-                                                   results_sliding_no_reset[2],
-                                                   results_sliding_no_reset[0], None, window_size, slide_offset]
+                    print(f"Running SlidingWindow no reset algorithm... with window size={window_size} and slide_offset={slide_offset}")
+                    results_sliding_no_reset = run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset, alpha_value)
+                    sliding_no_reset_rpa = sum(results_sliding_no_reset[3]) / len(results_sliding_no_reset[3])
+                    results_df.loc[len(results_df)] = [network_size, tau, "sliding_no_reset", results_sliding_no_reset[1],
+                                                       results_sliding_no_reset[2], results_sliding_no_reset[0],
+                                                       alpha_value, window_size, slide_offset,
+                                                       results_sliding_no_reset[3], sliding_no_reset_rpa]
 
     output_path = f"output/{add_timestamp("temporal_results")}.csv"
     results_df.to_csv(output_path)
@@ -367,9 +367,10 @@ def compute_temporal_results(tau_list, network_size_list,
 
 def compute_spatial_results(zipf_list, network_size_list, data_folder, lazy_splaynet_alphas, sliding_window_sizes,
                             sliding_offset_percentage_list):
+
     combinations = []
     columns = ["network_size", "zipf", "algorithm", "adjustment_cost", "routing_cost", "total_cost", "alpha",
-               "window_size", "sliding_offset"]
+               "window_size", "sliding_offset", "request_counter", "requests_per_adjustment"]
     results_df = pd.DataFrame(columns=columns)
 
     for zipf in zipf_list:
@@ -388,31 +389,35 @@ def compute_spatial_results(zipf_list, network_size_list, data_folder, lazy_spla
         results_splaynet = run_simulation_splaynet(nodes, sigma)
         # push to df
         results_df.loc[len(results_df)] = [network_size, zipf, "splaynet", results_splaynet[1], results_splaynet[2],
-                                           results_splaynet[0], None, None, None]
+                                           results_splaynet[0], None, None, None, None, None]
 
         for alpha_value in lazy_splaynet_alphas:
             print(f"Running Lazy SplayNet algorithm... with alpha={alpha_value}")
             results_lazy = run_simulation_lazy(nodes, sigma, alpha_value)
+            req_per_adjustment = sum(results_lazy[3]) / len(results_lazy[3])
             # push to df
             results_df.loc[len(results_df)] = [network_size, zipf, "lazy", results_lazy[1], results_lazy[2],
-                                               results_lazy[0], alpha_value, None, None]
+                                               results_lazy[0], alpha_value, None, None, results_lazy[3], req_per_adjustment]
 
-        for window_size in sliding_window_sizes:
-            sliding_offset_list = [int(window_size * p) for p in sliding_offset_percentage_list]
-            for slide_offset in sliding_offset_list:
-                print(
-                    f"Running SlidingWindow algorithm... with window size={window_size} and slide_offset={slide_offset}")
-                results_sliding = run_simulation_sliding(nodes, sigma, window_size, slide_offset)
-                results_df.loc[len(results_df)] = [network_size, zipf, "sliding", results_sliding[1],
-                                                   results_sliding[2],
-                                                   results_sliding[0], None, window_size, slide_offset]
+            for window_size in sliding_window_sizes:
+                sliding_offset_list = [int(window_size * p) for p in sliding_offset_percentage_list]
+                for slide_offset in sliding_offset_list:
+                    print(
+                        f"Running SlidingWindow algorithm... with alpha={alpha_value}, window size={window_size} and slide_offset={slide_offset}")
+                    results_sliding = run_simulation_sliding(nodes, sigma, window_size, slide_offset, alpha_value)
+                    sliding_rpa = sum(results_sliding[3]) / len(results_sliding[3])
+                    results_df.loc[len(results_df)] = [network_size, zipf, "sliding", results_sliding[1],
+                                                       results_sliding[2], results_sliding[0], alpha_value, window_size,
+                                                       slide_offset, results_sliding[3], sliding_rpa]
 
-                print(
-                    f"Running SlidingWindow no reset algorithm... with window size={window_size} and slide_offset={slide_offset}")
-                results_sliding_no_reset = run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset)
-                results_df.loc[len(results_df)] = [network_size, zipf, "sliding_no_reset", results_sliding_no_reset[1],
-                                                   results_sliding_no_reset[2],
-                                                   results_sliding_no_reset[0], None, window_size, slide_offset]
+                    print(
+                        f"Running SlidingWindow no reset algorithm... with alpha={alpha_value}, window size={window_size} and slide_offset={slide_offset}")
+                    results_sliding_no_reset = run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset, alpha_value)
+                    sliding_no_reset_rpa = sum(results_sliding_no_reset[3]) / len(results_sliding_no_reset[3])
+                    results_df.loc[len(results_df)] = [network_size, zipf, "sliding_no_reset", results_sliding_no_reset[1],
+                                                       results_sliding_no_reset[2], results_sliding_no_reset[0],
+                                                       alpha_value, window_size, slide_offset,
+                                                       results_sliding_no_reset[3], sliding_no_reset_rpa]
 
     output_path = f"output/{add_timestamp("spatial_results")}.csv"
     results_df.to_csv(output_path)
@@ -901,26 +906,21 @@ def real_data_main(log_scale, average):
 
 
 if __name__ == '__main__':
-    # tau = [100]
-    # networksize = [1000]
-    # windowsize = 100
-
-    # Algorithm specific variables
+    ''' Algorithm specific variables '''
     # Lazy SplayNet
-    threshold_alpha_list = [100]
-    # threshold_alpha_list = [100]
+    threshold_alpha_list = [50, 100, 250, 500, 1000]
+
     # Sliding Window
-    sliding_window_size_list = [100]
+    sliding_window_size_list = [50, 100, 250, 500, 1000]
+    # sliding_offset_percentages = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90, 1.0]
+    sliding_offset_percentages = [1.0]
     # sliding_offset_percentages = [0.1, 0.9, 1.0]
     # sliding_offset_percentages = [0.25, 0.5, 0.75, 1.0]
-    sliding_offset_percentages = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90, 1.0]
 
-    # Bool values and variables, that determine which parts of the workflow are executed
+    ''' Bool values and variables, that determine which parts of the workflow are executed '''
     # Generator booleans
     generate_spatial = False  # Set variables to True, if the datasets should be generated
     generate_temporal = False
-    node_ranges = [100]  # can either a single value [size] or as a tuple (start, stop, step) e.g. (100, 1100, 100)
-    sequence_length = 10**6
 
     # Compute simulation booleans
     run_simulation = True
@@ -934,10 +934,21 @@ if __name__ == '__main__':
     slice_temporal = ([None], [None])  # Variable to slice result as wished: ([network_size_slices], [parameter_slices])
     slice_spatial = ([None], [None])
 
-    # Parameters - can be adjusted as desired
-    tau_parameters = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    # tau_parameters = [0.1, 0.5, 0.9]
-    zipf_parameters = [1.1, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
+    ''' Sequence parameters - can be adjusted as desired '''
+    # all values
+    # tau_parameters = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    # zipf_parameters = [1.1, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
+
+    # testing values for test simulations
+    # tau_parameters = [0.1]
+    # zipf_parameters = [1.1]
+
+    # high tau, low zipf - good performance estimated
+    tau_parameters = [0.1, 0.5, 0.7, 0.9]
+    zipf_parameters = [1.1, 1.25, 1.5, 2.5]
+
+    node_ranges = [100]  # can either a single value [size] or as a tuple (start, stop, step) e.g. (100, 1100, 100)
+    sequence_length = 10 ** 5
 
     if len(node_ranges) == 1:
         size_list = [node_ranges[0]]
@@ -947,13 +958,14 @@ if __name__ == '__main__':
         print("Invalid node range")
         size_list = []
 
+    ''' Workflow '''
     # Generate communication sequence datasets
     if generate_spatial:
         print("Generating communication sequences for different spatial localities ...")
         spatial_sequences_folder = generate_sequence('spatial', size_list, zipf_parameters, sequence_length)
         print(f"Completed. Result(s) can be found in the folder {spatial_sequences_folder}. \n")
     else:
-        spatial_sequences_folder = 'spatial_data'
+        spatial_sequences_folder = 'spatial_data_10_5'
         print(f"Communication requests are taken from the folder {spatial_sequences_folder}.\n")
 
     if generate_temporal:
@@ -961,7 +973,7 @@ if __name__ == '__main__':
         temporal_sequences_folder = generate_sequence('temporal', size_list, tau_parameters, sequence_length)
         print(f"Completed. Result(s) can be found in the folder {temporal_sequences_folder}.\n")
     else:
-        temporal_sequences_folder = 'temporal_data'
+        temporal_sequences_folder = 'temporal_data_10_5'
         print(f"Communication requests are taken from the folder '{temporal_sequences_folder}'\n.")
 
     # Run simulations on datasets - results are saved in a csv (see path) and can be used multiple times

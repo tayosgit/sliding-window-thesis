@@ -69,6 +69,9 @@ def splaynet(topology: SplayNetwork, communication_sq: [CommunicationRequest]) -
 
 # Lazy SplayNet - for comparison
 def lazy_splaynet(topology: SplayNetwork, communication_sq: [CommunicationRequest], alpha: int) -> (SplayNetwork, int):
+    request_counter_list = []
+    request_counter = 0
+
     total_cost = 0
     total_adjustment_cost = 0
     total_routing_cost = 0
@@ -92,13 +95,18 @@ def lazy_splaynet(topology: SplayNetwork, communication_sq: [CommunicationReques
         total_cost += current_routing_cost
         total_routing_cost += current_routing_cost
 
+        request_counter += 1
+
         if epoch_cost >= alpha:
             total_cost += alpha  # Costs for the adjustment
             total_adjustment_cost += alpha
             topology = copy.deepcopy(virtual_topology)
             epoch_cost = 0
 
-    return topology, total_cost, total_adjustment_cost, total_routing_cost
+            request_counter_list.append(request_counter)
+            request_counter = 0
+    request_counter_list.append(request_counter)
+    return topology, total_cost, total_adjustment_cost, total_routing_cost, request_counter_list
 
 
 # def lazy_splaynet(topology: SplayNetwork, communication_sq: [CommunicationRequest], alpha: int) -> (SplayNetwork, int)
@@ -233,12 +241,15 @@ def lazy_splaynet(topology: SplayNetwork, communication_sq: [CommunicationReques
 
 
 # Variable Sliding Window SplayNet - NEW APPROACH with fixed tree (reset)
-def variable_sliding_window_splaynet(initial_topology, communication_sq, window_size, slide_offset):
+def variable_sliding_window_splaynet(initial_topology, communication_sq, window_size, slide_offset, alpha):
+    request_counter_list = []
+    request_counter = 0
+
     total_cost = 0
     total_adjustment_cost = 0
     total_routing_cost = 0
     epoch_cost = 0
-    alpha = window_size
+    # alpha = window_size
 
     # virtual_topology = initial_topology
     virtual_topology = copy.deepcopy(initial_topology)
@@ -256,6 +267,8 @@ def variable_sliding_window_splaynet(initial_topology, communication_sq, window_
         total_routing_cost += current_routing_cost
         epoch_cost += current_routing_cost
 
+        request_counter += 1
+
         if epoch_cost >= alpha:
             resulting_topology = copy.deepcopy(initial_topology)    # reset to initial topology
             resulting_topology.adjustment_cost = 0
@@ -267,16 +280,24 @@ def variable_sliding_window_splaynet(initial_topology, communication_sq, window_
             virtual_topology = copy.deepcopy(resulting_topology)
             epoch_cost = 0
 
-    return resulting_topology, total_cost, total_adjustment_cost, total_routing_cost
+            request_counter_list.append(request_counter)
+            request_counter = 0
+
+    request_counter_list.append(request_counter)
+
+    return resulting_topology, total_cost, total_adjustment_cost, total_routing_cost, request_counter_list
 
 
 # Variable Sliding Window SplayNet - NEW APPROACH without reset
-def variable_sliding_window_splaynet_no_reset(initial_topology, communication_sq, window_size, slide_offset):
+def variable_sliding_window_splaynet_no_reset(initial_topology, communication_sq, window_size, slide_offset, alpha):
+    request_counter_list = []
+    request_counter = 0
+
     total_cost = 0
     total_adjustment_cost = 0
     total_routing_cost = 0
     epoch_cost = 0
-    alpha = window_size
+    # alpha = window_size
 
     virtual_topology = copy.deepcopy(initial_topology)
     resulting_topology = copy.deepcopy(initial_topology)
@@ -293,6 +314,8 @@ def variable_sliding_window_splaynet_no_reset(initial_topology, communication_sq
         total_routing_cost += current_routing_cost
         epoch_cost += current_routing_cost
 
+        request_counter += 1
+
         if epoch_cost >= alpha:
             resulting_topology.adjustment_cost = 0
             # print(f"NO RESET Adjustments are made based on communication_sq[{max(0, i - window_size)}: {i}]")
@@ -303,7 +326,11 @@ def variable_sliding_window_splaynet_no_reset(initial_topology, communication_sq
             virtual_topology = copy.deepcopy(resulting_topology)
             epoch_cost = 0
 
-    return resulting_topology, total_cost, total_adjustment_cost, total_routing_cost
+            request_counter_list.append(request_counter)
+            request_counter = 0
+    request_counter_list.append(request_counter)
+
+    return resulting_topology, total_cost, total_adjustment_cost, total_routing_cost, request_counter_list
 
 
 # Previous versions of Sliding Window (new approach)
