@@ -2,8 +2,8 @@ import copy
 import os
 import random
 from datetime import datetime
-
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import pandas as pd
 
@@ -35,7 +35,6 @@ def csv_to_sequence(path):
     data = pd.read_csv(path, usecols=["src", "dst"])
     communication_sequence = [CommunicationRequest(i, row[1], row[2]) for i, row in enumerate(data.itertuples(), 1)]
     all_nodes = pd.concat([data["src"], data["dst"]]).unique()
-    # nodes = [Node(i) for i in all_nodes] # dieser Schritt erstellt alle Node Instanzen
     return communication_sequence, all_nodes
 
 
@@ -133,7 +132,6 @@ def generate_temporal_sequence(nodes, tau, length):
         pairs.append((u, v))
         prev_pair = (u, v)
     df = pd.DataFrame(pairs, columns=["src", "dst"])
-    # df["size"] = 1  # nicht gebraucht, aber damit dfs einheitlich sind
     return df
 
 
@@ -224,150 +222,6 @@ def run_simulation_sliding_no_reset(nodes, sigma, window_size, slide_offset, alp
     sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding,
                             requests_per_adjustment]
     return sliding_cost_results
-
-
-# depr
-# def run_simulation_temporal(nodes, tau, network_size, sigma, alpha, window_size):
-#     # Initialize tree network
-#     network = SplayNetwork()
-#     network.insert_balanced_BST(nodes)
-#
-#     network_2 = copy.deepcopy(network)
-#     network_original = network
-#
-#     print(f"Processing dataset for tau={tau} with {network_size} nodes.")
-#
-#     # Apply algorithms, add loop for parameter finetuning here later
-#     print("Running SplayNet algorithm...")
-#     # _, total_cost_splaynet = splaynet(copy.deepcopy(network), sigma)
-#     _, total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet = splaynet(network_original,
-#                                                                                                    sigma)
-#     splaynet_cost_results = [total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet]
-#     network_original = network_2
-#
-#     print(f"Finished with total cost {total_cost_splaynet}")
-#
-#     print("Running Lazy SplayNet algorithm...")
-#     # _, total_cost_lazy = lazy_splaynet(copy.deepcopy(network), sigma, alpha=alpha)
-#     _, total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy = lazy_splaynet(network_original, sigma,
-#                                                                                             alpha=alpha)
-#     lazy_cost_results = [total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy]
-#     network_original = network_2
-#
-#     print(f"Finished with total cost {total_cost_lazy}")
-#
-#     # print("Running Sliding Window SplayNet algorithm...")
-#     # # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
-#     # _, total_cost_sliding = sliding_window_splaynet(network_original, sigma, slide=slide)
-#     # # network_original = network
-#
-#     print("Running Sliding Window SplayNet algorithm...")
-#     # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
-#     _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding = variable_sliding_window_splaynet(
-#         initial_topology=network_original, communication_sq=sigma,
-#         window_size=window_size, slide_offset=window_size // 2)
-#     sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding]
-#     # network_original = network
-#
-#     print(f"Finished with total cost {total_cost_sliding}")
-#
-#     # Preparation for plotting
-#     # combined_data = [(network_size, (total_cost_splaynet, total_cost_lazy, total_cost_sliding))]
-#     # return total_cost_splaynet, total_cost_lazy, total_cost_sliding
-#     return splaynet_cost_results, lazy_cost_results, sliding_cost_results
-
-
-# depr
-# def run_simulation_temporal(nodes, tau, network_size, sigma, alpha, window_size):
-#     # Initialize tree network
-#     network = SplayNetwork()
-#     network.insert_balanced_BST(nodes)
-#
-#     network_2 = copy.deepcopy(network)
-#     network_original = network
-#
-#     print(f"Processing dataset for tau={tau} with {network_size} nodes.")
-#
-#     # Apply algorithms, add loop for parameter finetuning here later
-#     print("Running SplayNet algorithm...")
-#     # _, total_cost_splaynet = splaynet(copy.deepcopy(network), sigma)
-#     _, total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet = splaynet(network_original,
-#                                                                                                    sigma)
-#     splaynet_cost_results = [total_cost_splaynet, total_adjustment_cost_splaynet, total_routing_cost_splaynet]
-#     network_original = network_2
-#
-#     print(f"Finished with total cost {total_cost_splaynet}")
-#
-#     print("Running Lazy SplayNet algorithm...")
-#     # _, total_cost_lazy = lazy_splaynet(copy.deepcopy(network), sigma, alpha=alpha)
-#     _, total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy = lazy_splaynet(network_original, sigma,
-#                                                                                             alpha=alpha)
-#     lazy_cost_results = [total_cost_lazy, total_adjustment_cost_lazy, total_routing_cost_lazy]
-#     network_original = network_2
-#
-#     print(f"Finished with total cost {total_cost_lazy}")
-#
-#     # print("Running Sliding Window SplayNet algorithm...")
-#     # # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
-#     # _, total_cost_sliding = sliding_window_splaynet(network_original, sigma, slide=slide)
-#     # # network_original = network
-#
-#     print("Running Sliding Window SplayNet algorithm...")
-#     # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
-#     _, total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding = variable_sliding_window_splaynet(
-#         initial_topology=network_original, communication_sq=sigma,
-#         window_size=window_size, slide_offset=window_size // 2)
-#     sliding_cost_results = [total_cost_sliding, total_adjustment_cost_sliding, total_routing_cost_sliding]
-#     # network_original = network
-#
-#     print(f"Finished with total cost {total_cost_sliding}")
-#
-#     # Preparation for plotting
-#     # combined_data = [(network_size, (total_cost_splaynet, total_cost_lazy, total_cost_sliding))]
-#     # return total_cost_splaynet, total_cost_lazy, total_cost_sliding
-#     return splaynet_cost_results, lazy_cost_results, sliding_cost_results
-
-# depr
-# def run_simulation_spatial(nodes, zipf, network_size, sigma, alpha, window_size):
-#     # Initialize tree network
-#     network = SplayNetwork()
-#     network.insert_balanced_BST(nodes)
-#
-#     network_original = network
-#
-#     print(f"Processing dataset for zipf={zipf} with {network_size} nodes.")
-#
-#     # Apply algorithms, add loop for parameter finetuning here later
-#     print("Running SplayNet algorithm...")
-#     # _, total_cost_splaynet = splaynet(copy.deepcopy(network), sigma)
-#     _, total_cost_splaynet = splaynet(network_original, sigma)
-#     network_original = network
-#
-#     print(f"Finished with total cost {total_cost_splaynet}")
-#
-#     print("Running Lazy SplayNet algorithm...")
-#     # _, total_cost_lazy = lazy_splaynet(copy.deepcopy(network), sigma, alpha=alpha)
-#     _, total_cost_lazy = lazy_splaynet(network_original, sigma, alpha=alpha)
-#     network_original = network
-#
-#     print(f"Finished with total cost {total_cost_lazy}")
-#
-#     # print("Running Sliding Window SplayNet algorithm...")
-#     # # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
-#     # _, total_cost_sliding = sliding_window_splaynet(network_original, sigma, slide=slide)
-#     # # network_original = network
-#
-#     print("Running Sliding Window SplayNet algorithm...")
-#     # _, total_cost_sliding = sliding_window_splaynet(copy.deepcopy(network), sigma, slide=slide)
-#     _, total_cost_sliding = variable_sliding_window_splaynet(initial_topology=network_original, communication_sq=sigma,
-#                                                              window_size=window_size, slide_offset=window_size // 2)
-#     # network_original = network
-#
-#     print(f"Finished with total cost {total_cost_sliding}")
-#
-#     # Preparation for plotting
-#     # combined_data = [(network_size, (total_cost_splaynet, total_cost_lazy, total_cost_sliding))]
-#     return total_cost_splaynet, total_cost_lazy, total_cost_sliding
 
 
 # Result calculating functions - Outputs are stored as csv for easier access for the plotting operations
@@ -520,106 +374,6 @@ def compute_spatial_results(zipf_list, network_size_list, data_folder, lazy_spla
     return output_path
 
 
-# depr
-# def compute_spatial_results(zipf_params, network_size_list, data_folder):  # Ehemals: main(log2, average2)
-#     # anhand parameter daten einlesen
-#     # zipf_params = ["1.1", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5"]
-#     # network_size_list = ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"]
-#     # tau_list = ["0.1"]
-#     # network_size_list = ["100"]
-#
-#     combinations = []
-#     results_df = pd.DataFrame(
-#         columns=["network_size", "zipf", "total_cost_splaynet", "total_cost_lazy", "total_cost_sliding"])
-#
-#     for zipf in zipf_params:
-#         for network_size in network_size_list:
-#             combinations.append(f"{zipf}_{network_size}")
-#
-#     # All variable combinations
-#     for combination in combinations:
-#         zipf = float(combination.split("_")[0])
-#         network_size = int(combination.split("_")[1])
-#         # sigma, nodes = csv_to_sequence(f"csv_spatial/data_{combination}.csv")
-#         sigma, nodes = csv_to_sequence(f"{data_folder}/data_{combination}.csv")
-#         total_cost_splaynet, total_cost_lazy, total_cost_sliding = run_simulation_spatial(nodes, zipf, network_size,
-#                                                                                           sigma, 100,
-#                                                                                           100)
-#         results_df.loc[len(results_df)] = [network_size, zipf, total_cost_splaynet, total_cost_lazy, total_cost_sliding]
-#
-#     output_path = f"output/{add_timestamp("spatial_results")}.csv"
-#     results_df.to_csv(output_path)
-#     return output_path
-
-
-# depr
-# def compute_temporal_results_old(tau_list, network_size_list,
-#                                  data_folder, lazy_splaynet_alpha,
-#                                  sliding_window_size):  # Ehemals: main_compute_temporal(log_scale_2, average_2)
-#     # Für temporal
-#     # anhand parameter daten einlesen
-#     # tau_list = ["0.1", "0.2", "0.3", "0.4", "0.5", "0.5", "0.6", "0.7", "0.8", "0.9"]
-#     # network_size_list = ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"]
-#     # tau_list = ["0.1"]
-#     # network_size_list = ["100"]
-#
-#     combinations = []
-#     results_df = pd.DataFrame(
-#         columns=["network_size", "tau", "adjustment_cost_splaynet", "routing_cost_splaynet", "total_cost_splaynet",
-#                  "adjustment_cost_lazy", "routing_cost_lazy", "total_cost_lazy", "adjustment_cost_sliding",
-#                  "routing_cost_sliding", "total_cost_sliding"])
-#
-#     # columns2= ["network_size", "tau", "algorithm", "adjustment_cost", "routing_cost", "total_cost", "alpha", "window_size", "sliding_offset"]
-#
-#     # "adjustment_cost_splaynet", "routing_cost_splaynet", "total_cost_splaynet"
-#     # "adjustment_cost_splaynet<a-value>", "routing_cost_splaynet<a-value>", "total_cost_splaynet<a-value>"
-#     # "adjustment_cost_splaynet<window_size>_<sliding_offset>", "routing_cost_sliding<window_size>_<sliding_offset>", "total_cost_sliding<window_size>_<sliding_offset>"
-#
-#     # network_size, tau, algorithm, adjustment_cost, routing_cost, total_cost, alpha, window-size, sliding_offset
-#
-#     # New DF including results of new ALG
-#     # results_df = pd.DataFrame(
-#     #     columns=["network_size", "tau", "adjustment_cost_splaynet", "routing_cost_splaynet", "total_cost_splaynet",
-#     #              "adjustment_cost_lazy", "routing_cost_lazy", "total_cost_lazy", "adjustment_cost_sliding_reset",
-#     #              "routing_cost_sliding_reset", "total_cost_sliding_reset", "adjustment_cost_sliding_no_reset",
-#     #              "routing_cost_sliding_no_reset", "total_cost_sliding_no_reset"])
-#
-#     for tau in tau_list:
-#         for network_size in network_size_list:
-#             combinations.append(f"{tau}_{network_size}")
-#
-#     # Ausgabe der Kombinationen
-#     for combination in combinations:
-#         tau = float(combination.split("_")[0])
-#         network_size = int(combination.split("_")[1])
-#         sigma, nodes = csv_to_sequence(f"{data_folder}/data_{combination}.csv")
-#         # total_cost_splaynet, total_cost_lazy, total_cost_sliding = run_simulation_temporal(nodes, tau, network_size,
-#         #                                                                                    sigma, 100,
-#         #                                                                                    100)
-#         results_splaynet, results_lazy, results_sliding = run_simulation_temporal(nodes, tau, network_size,
-#                                                                                   sigma, lazy_splaynet_alpha,
-#                                                                                   sliding_window_size)
-#         # results_df.loc[len(results_df)] = [network_size, tau, total_cost_splaynet, total_cost_lazy,
-#         # total_cost_sliding]
-#         results_df.loc[len(results_df)] = [network_size, tau, results_splaynet[2], results_splaynet[1],
-#                                            results_splaynet[0], results_lazy[2], results_lazy[1], results_lazy[0],
-#                                            results_sliding[2], results_sliding[1], results_sliding[0]]
-#
-#     output_path = f"output/{add_timestamp("temporal_results")}.csv"
-#     results_df.to_csv(output_path)
-#     return output_path
-#
-#     # print(sigma, nodes)
-#
-#     # logscale total cost
-#     # logscale average cost
-#     # total cost normal scale
-#     # average cost total cost
-#     # Spatial locality (zip distribution) (die Graphen auf dem Papier )
-#
-#     # - [ ] Neuer graph mit Divide by the number of requests statt number of nodes of network
-
-
 # Plotting functions
 def plot_x_network_size_y_total_cost(df, log_scale_bool):
     plt.figure(figsize=(10, 6))
@@ -668,7 +422,6 @@ def plot_x_network_size_y_total_cost(df, log_scale_bool):
 def plot_x_network_size_y_average_cost(df, log_scale_bool):
     avg_df = df.groupby(['network_size', 'algorithm']).mean().reset_index()
 
-    # Plot erstellen
     plt.figure(figsize=(10, 6))
 
     # Filter data for each algorithm
@@ -694,17 +447,13 @@ def plot_x_network_size_y_average_cost(df, log_scale_bool):
     plt.ylabel('Average Total Cost')
     plt.title('Average Total Cost vs Network Size')
 
-    # Show legend
     plt.legend()
 
-    # Show grid
     plt.grid(True)
 
-    # Log scale if required
     if log_scale_bool:
         plt.yscale('log')
 
-    # Save plot with a timestamp in the filename
     type_of_data = "spatial" if "zipf" in df.columns else "temporal"
     filename = f"output/{type_of_data}_{add_timestamp('x_network_size_y_average_cost_log_scale')}.png" if log_scale_bool else f"output/{type_of_data}_{add_timestamp('x_network_size_y_average_cost')}.png"
     plt.savefig(filename)
@@ -719,7 +468,6 @@ def plot_x_zipf_or_tau_y_total_cost(df, network_size):
         print(f"No data available for network size {network_size}")
         return
 
-    # Plot erstellen
     plt.figure(figsize=(10, 6))
 
     # Filter data for each algorithm
@@ -745,7 +493,6 @@ def plot_x_zipf_or_tau_y_total_cost(df, network_size):
     plt.ylabel('Total Cost')
     plt.title(f'Total Cost vs {zipf_or_tau} for Network Size {network_size}')
 
-    # Show legend
     plt.legend()
 
     # Show grid
@@ -754,7 +501,7 @@ def plot_x_zipf_or_tau_y_total_cost(df, network_size):
 
     # Save plot with a timestamp in the filename
     plt.savefig(f"output/{type_text}_x_{zipf_or_tau}_y_total_cost_network_size_{network_size}{add_timestamp('')}.png")
-    # Show plot
+
     plt.show()
 
 
@@ -768,7 +515,6 @@ def plot_x_zipf_or_tau_y_average_cost(df, network_size):
 
     avg_df = filtered_df.groupby([zipf_or_tau, 'algorithm']).mean().reset_index()
 
-    # Plot erstellen
     plt.figure(figsize=(10, 6))
 
     # Filter data for each algorithm
@@ -810,70 +556,56 @@ def plot_x_zipf_or_tau_y_average_cost(df, network_size):
 def plot_avg_cost_comparison(df, algorithms):
     zipf_or_tau = "zipf" if "zipf" in df.columns else "tau"
 
-    # Durchschnittliche Werte für jede Network Size und Algorithmus berechnen
     avg_df = df.groupby(['network_size', 'algorithm']).mean().reset_index()
 
-    # Plot erstellen
     plt.figure(figsize=(10, 6))
 
-    # Plot für jeden Algorithmus in der Liste
     for algorithm in algorithms:
         filtered_df = avg_df[avg_df['algorithm'] == algorithm]
         plt.plot(filtered_df['network_size'], filtered_df['total_cost'], label=algorithm.capitalize(), marker='o')
 
-    # Achsenbeschriftungen und Titel
     plt.xlabel('Network Size')
     plt.ylabel('Average Total Cost')
     plt.title('Average Total Cost Comparison')
 
-    # Legende anzeigen
     plt.legend()
 
-    # Grid anzeigen
     plt.grid(True)
 
     type_text = "temporal" if zipf_or_tau == "tau" else "spatial"
     plt.savefig(
         f"output/{type_text}_x_network_size_y_average_cost_with_algorithms_{'_'.join(algorithms)}_{add_timestamp('')}.png")
 
-    # Plot anzeigen
     plt.show()
 
 
 def plot_cost_ratio(df, network_size, cost_type1, cost_type2, algorithms):
-    # Filtere das DataFrame für die angegebene network_size
+
     filtered_df = df[df['network_size'] == network_size]
 
     if filtered_df.empty:
         print(f"No data available for network size {network_size}")
         return
 
-    # Plot erstellen
     plt.figure(figsize=(10, 6))
 
-    # Plot für das Kostenverhältnis für jeden Algorithmus in der Liste
     for algorithm in algorithms:
         algorithm_df = filtered_df[filtered_df['algorithm'] == algorithm]
 
         if not algorithm_df.empty:
-            # Berechne das Kostenverhältnis
+
             cost_ratio = algorithm_df[cost_type1] / algorithm_df[cost_type2]
 
-            # Plot für das Kostenverhältnis
             plt.plot(algorithm_df['tau'], cost_ratio, label=f'{algorithm} {cost_type1}/{cost_type2}', marker='o')
 
-    # Achsenbeschriftungen und Titel
     plt.xlabel('Tau')
     plt.ylabel(f'{cost_type1}/{cost_type2}')
     plt.title(f'Cost Ratio ({cost_type1}/{cost_type2}) vs Tau for Network Size {network_size}')
 
-    # Logarithmische Skala auf der y-Achse setzen
     plt.yscale('log')
 
-    # Grid anzeigen
     plt.grid(True)
 
-    # Plot anzeigen
     plt.legend()
     plt.show()
 
@@ -914,7 +646,7 @@ def plot_requests_per_window(ratio_df):
 
     plt.legend()
 
-    plt.ylim(400, 990)  # Adjust these values as needed
+    plt.ylim(400, 1500)  # Adjust these values as needed
 
     plt.show()
 
@@ -953,9 +685,44 @@ def plot_requests_per_window_seperate_costs(ratio_df):
     plt.ylabel('Total Cost (in Thousands)', fontweight='bold')
     plt.title('Total Cost by Ratio Alpha Window Size')
     plt.xticks(r, average_cost_by_ratio_scaled['ratio_alpha_windowsize'])
-    plt.ylim(960, 990)  # Adjust these values as needed
+    plt.ylim(960, 1500)  # Adjust these values as needed
     plt.show()
 
+
+def plot_spatial_req_per_adjustments_for_windows_and_alpha(df_spatial):
+    sliding_data_spatial = df_spatial[df_spatial['algorithm'] == 'sliding']
+
+    sliding_data_spatial['alpha/window_size'] = sliding_data_spatial['alpha'] / sliding_data_spatial['window_size']
+
+    # Skalierung der Kostenwerte auf Tausendstel
+    sliding_data_spatial['total_cost'] /= 1000
+    sliding_data_spatial['adjustment_cost'] /= 1000
+    sliding_data_spatial['routing_cost'] /= 1000
+    sliding_data_spatial['requests_per_adjustment'] /= 1000
+
+    # Definieren der X- und Y-Variablen
+    x_vars = ['window_size', 'alpha/window_size']
+    y_vars = ['total_cost', 'adjustment_cost', 'routing_cost', 'requests_per_adjustment']
+
+    # Erstellen des Grids
+    g = sns.PairGrid(sliding_data_spatial, x_vars=x_vars, y_vars=y_vars, hue='zipf', palette='viridis')
+
+    # Scatterplot für den unteren Teil des Grids
+    g.map(sns.lineplot)
+
+    # Setzen der X-Achse auf logarithmischen Maßstab
+    for ax in g.axes.flatten():
+        if ax.get_xlabel() in x_vars:
+            ax.set_xscale('log')
+
+    # Hinzufügen einer Legende
+    g.add_legend()
+
+    # Titel hinzufügen
+    plt.suptitle('Grid of Metrics for Sliding Algorithm with Zipf as Hue', y=1.02)
+
+    # Anzeigen des Plots
+    plt.show()
 
 def test_main():
     filepath = "data/sample.csv"
@@ -1083,11 +850,12 @@ def real_data_main(log_scale, average):
 if __name__ == '__main__':
     ''' Algorithm specific variables '''
     # Lazy SplayNet
-    threshold_alpha_list = [100, 250, 500, 1000, 5000, 10000]
-    treshold_alpha_list = [64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
+    # threshold_alpha_list = [100, 250, 500, 1000, 5000, 10000]
+    threshold_alpha_list = [128, 256, 512, 1024, 2048, 4096, 8192]
 
     # Sliding Window
-    sliding_window_size_list = [50, 100, 250, 500, 1000]
+    # sliding_window_size_list = [50, 100, 250, 500, 1000]
+    sliding_window_size_list = [100, 250, 500, 1000]
     ratio_percentages = [0.25, 0.50, 1, 2, 4]
     # sliding_offset_percentages = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90, 1.0]
     sliding_offset_percentages = [1.0]
@@ -1121,12 +889,16 @@ if __name__ == '__main__':
     # zipf_parameters = [1.1]
 
     # high tau, low zipf - good performance estimated
-    tau_parameters = [0.1, 0.7, 0.8, 0.9]
-    zipf_parameters = [1.1, 1.25, 1.5, 2.5]
+    # tau_parameters = [0.1, 0.7, 0.8, 0.9]
+    # zipf_parameters = [1.1, 1.25, 1.5, 2.5]
 
-    node_ranges = [100]  # can either a single value [size] or as a tuple (start, stop, step) e.g. (100, 1100, 100)
+    # final values
+    tau_parameters = [0.1, 0.3, 0.5, 0.7, 0.9]
+    zipf_parameters = [1.1, 1.5, 2.0, 2.5]
+
+    node_ranges = [1000]  # can either a single value [size] or as a tuple (start, stop, step) e.g. [100] (100, 1100, 100) (200, 1200, 200)
     sequence_length = 10 ** 6
-    tree_type = "optimal"  # the other options are "balanced", "frequency" or "shuffled"
+    tree_type = "shuffled"  # options are "balanced", "frequency", "shuffled", "optimal"
 
     if len(node_ranges) == 1:
         size_list = [node_ranges[0]]
@@ -1169,24 +941,32 @@ if __name__ == '__main__':
                                                       sliding_window_sizes=sliding_window_size_list,
                                                       sliding_offset_percentage_list=sliding_offset_percentages,
                                                       tree_type=tree_type, ratio_percentages=ratio_percentages)
-        # spatial_output_path = "output/spatial_results_20240603_162414.csv"
+
     else:
         # Add path of desired simulation
+        temporal_output_path = "output/frequency_temporal_results_20240719_194519.csv"
+        spatial_output_path = "output/frequency_spatial_results_20240719_214707.csv"
+
         # temporal_output_path = "output/temporal_results_20240529_210645.csv"
         # spatial_output_path = "output/spatial_results_20240529_231840.csv"
 
-        temporal_output_path = "output/temporal_results_20240603_161420.csv"
-        spatial_output_path = "output/spatial_results_20240603_162414.csv"
+        # temporal_output_path = "output/temporal_results_20240603_161420.csv"
+        # spatial_output_path = "output/spatial_results_20240603_162414.csv"
 
-        temporal_output_path = "output/frequency_temporal_results_20240630_200238.csv"
-        spatial_output_path = "output/frequency_spatial_results_20240630_203028.csv"
+        # temporal_output_path = "output/frequency_temporal_results_20240630_200238.csv"
+        # spatial_output_path = "output/frequency_spatial_results_20240630_203028.csv"
+
 
     temporal_df = pd.read_csv(temporal_output_path)
     spatial_df = pd.read_csv(spatial_output_path)
 
     # Evaluate and generate plots
     if plot:
+        # Remove comment symbol to execute desired plotting function
+
         # Plot average request per window (sorted by ratio of alpha and windowsize)
+        # plot_spatial_req_per_adjustments_for_windows_and_alpha(spatial_df)
+        #
         temporal_ratio = compute_window_alpha_ratio(temporal_df)
         plot_requests_per_window(temporal_ratio)
         plot_requests_per_window_seperate_costs(temporal_ratio)
@@ -1194,24 +974,27 @@ if __name__ == '__main__':
         spatial_ratio = compute_window_alpha_ratio(spatial_df)
         plot_requests_per_window(spatial_ratio)
         plot_requests_per_window_seperate_costs(spatial_ratio)
-
-        # Evaluate performance of communication sequences of different localities
-        plot_x_network_size_y_total_cost(temporal_df, log_scale)
-        plot_x_network_size_y_total_cost(temporal_df, not log_scale)
-
-        if average:
-            plot_x_network_size_y_average_cost(temporal_df, log_scale)
-            plot_x_network_size_y_average_cost(temporal_df, not log_scale)
-
-        plot_x_zipf_or_tau_y_total_cost(temporal_df, 1000)
+        #
+        # # Evaluate performance of communication sequences of different localities
+        # plot_x_network_size_y_total_cost(temporal_df, log_scale)
+        # plot_x_network_size_y_total_cost(temporal_df, not log_scale)
+        #
+        # if average:
+        #     plot_x_network_size_y_average_cost(temporal_df, log_scale)
+        #     plot_x_network_size_y_average_cost(temporal_df, not log_scale)
+        #
+        # plot_x_zipf_or_tau_y_total_cost(temporal_df, 1000)
         # plot_x_zipf_or_tau_y_total_cost(temporal_df, 200)
         # plot_x_zipf_or_tau_y_total_cost(temporal_df, 300)
         # plot_x_zipf_or_tau_y_total_cost(temporal_df, 400)
+        #
+        # plot_x_zipf_or_tau_y_average_cost(temporal_df, 1000)
+        #
+        # plot_avg_cost_comparison(temporal_df, ["lazy", "sliding", "sliding_no_reset"])
+        # plot_avg_cost_comparison(temporal_df, ["sliding", "sliding_no_reset"])
+        # plot_cost_ratio(temporal_df, 100, "total_cost_lazy", "total_cost_splaynet")
 
-        plot_x_zipf_or_tau_y_average_cost(temporal_df, 1000)
-
-        plot_avg_cost_comparison(temporal_df, ["lazy", "sliding", "sliding_no_reset"])
-        plot_avg_cost_comparison(temporal_df, ["sliding", "sliding_no_reset"])
+        # plot_cost_ratio(temporal_df, 1000, "total_cost", "routing_cost", ["lazy", "sliding", "sliding_no_reset"])
 
     #### ENDE
 

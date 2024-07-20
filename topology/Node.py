@@ -22,7 +22,6 @@ class Node:
     def get_right(self):
         return self.right
 
-    # Setter eventuell überflüssig
     def set_parent(self, parent):
         self.parent = parent
 

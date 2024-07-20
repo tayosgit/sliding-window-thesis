@@ -1,29 +1,6 @@
 from topology.Node import Node
 
 
-# class SplayNetwork:
-#     def __init__(self):
-#             self.root = None
-#             self.routing_cost = 0
-#             self.adjustment_cost = 0
-#
-#     def insert_balanced_BST(self, node_list: [int]):
-#         node_list.sort()
-#         k = len(node_list) // 2
-#         self.root = Node(node_list[k])
-#         self.root.left = self.insertion_iteration(node_list[:k], self.root)
-#         self.root.right = self.insertion_iteration(node_list[k + 1:], self.root)
-#
-#     def insertion_iteration(self, node_list: [int], parent: Node):
-#         if len(node_list) == 0:
-#             return None
-#         k = len(node_list) // 2
-#         new_node = Node(node_list[k])
-#         new_node.parent = parent
-#         new_node.left = self.insertion_iteration(node_list[:k], new_node)
-#         new_node.right = self.insertion_iteration(node_list[k + 1:], new_node)
-#         return new_node
-
 class SplayNetwork:
 
     def __init__(self):
@@ -115,8 +92,6 @@ class SplayNetwork:
             new_LCA = self.splay_wrapper(common_ancestor, node_u)
         else:
             new_LCA = self.splay_wrapper(self.root, node_u)
-        # if node_u == node_v:
-        #     raise Exception("gleiche Knoten kommunizieren")
         if node_u > node_v:
             self.splay_wrapper(new_LCA.left, node_v)
         if node_u < node_v:
@@ -184,146 +159,6 @@ class SplayNetwork:
                 stack.append((beg, root_index - 1, root, "left"))
 
         return self.root
-    # def insert_optimal_BST(self, node_list: [int], node_weights: [[int]]):
-    #     allNodes = [Node(key) for key in node_list]
-    #     subtrees_cost, allRoots = self.calculate_optimal_BST(node_weights, len(allNodes))
-    #     self.root = self.construct_optimal_BST_iterative(allNodes, allRoots, 0, len(allNodes) - 1)
-    #
-    # def calculate_optimal_BST(self, node_weights, n):
-    #     subtrees_cost = [[0] * n for _ in range(n)]
-    #     allRoots = [[0] * n for _ in range(n)]
-    #     W = [[0] * n for _ in range(n)]
-    #
-    #     # Improved calculation of W
-    #     for i in range(n):
-    #         for j in range(i, n):
-    #             W[i][j] = node_weights[i][j] + (W[i][j - 1] if j > i else 0)
-    #
-    #     for length in range(2, n + 1):
-    #         for i in range(n - length + 1):
-    #             j = i + length - 1
-    #             subtrees_cost[i][j] = float('inf')
-    #             for r in range(i, j + 1):
-    #                 cost = (subtrees_cost[i][r - 1] if r > i else 0) + \
-    #                        (subtrees_cost[r + 1][j] if r < j else 0) + \
-    #                        W[i][j]
-    #                 if cost < subtrees_cost[i][j]:
-    #                     subtrees_cost[i][j] = cost
-    #                     allRoots[i][j] = r
-    #
-    #     return subtrees_cost, allRoots
-    #
-    # def construct_optimal_BST_iterative(self, allNodes, allRoots, beg, end):
-    #     if beg > end:
-    #         return None
-    #
-    #     stack = [(beg, end, None, None)]
-    #     visited = set()  # To track visited nodes and avoid infinite loops
-    #
-    #     while stack:
-    #         beg, end, parent, direction = stack.pop()
-    #         if beg <= end:
-    #             root_index = allRoots[beg][end]
-    #             if (beg, end, root_index) in visited:
-    #                 continue  # Skip already visited nodes
-    #             visited.add((beg, end, root_index))
-    #
-    #             root = allNodes[root_index]
-    #             if parent is None:
-    #                 self.root = root
-    #             else:
-    #                 if direction == "left":
-    #                     parent.left = root
-    #                 else:
-    #                     parent.right = root
-    #
-    #             # Debugging output
-    #             print(f"Processed node with key: {root.key}, beg: {beg}, end: {end}, root_index: {root_index}")
-    #
-    #             stack.append((root_index + 1, end, root, "right"))
-    #             stack.append((beg, root_index - 1, root, "left"))
-    #
-    #     return self.root
-    # def insert_optimal_BST(self, node_list: [int], node_weights: [[int]]):
-    #     allNodes = [Node(key) for key in node_list]
-    #     subtrees_cost, allRoots = self.calculate_optimal_BST(node_weights, len(allNodes))
-    #     self.root = self.construct_optimal_BST(allNodes, allRoots, 0, len(allNodes) - 1)
-    #
-    # def calculate_optimal_BST(self, node_weights, n):
-    #     subtrees_cost = [[0] * n for _ in range(n)]
-    #     allRoots = [[0] * n for _ in range(n)]
-    #     W = [[0] * n for _ in range(n)]
-    #
-    #     for i in range(n):
-    #         for j in range(i, n):
-    #             W[i][j] = node_weights[i][j]
-    #             if i != j:
-    #                 W[i][j] += W[i][j - 1] if j > 0 else 0
-    #
-    #     for length in range(2, n + 1):
-    #         for i in range(n - length + 1):
-    #             j = i + length - 1
-    #             subtrees_cost[i][j] = float('inf')
-    #             for r in range(i, j + 1):
-    #                 cost = (subtrees_cost[i][r - 1] if r > i else 0) + \
-    #                        (subtrees_cost[r + 1][j] if r < j else 0) + \
-    #                        W[i][j]
-    #                 if cost < subtrees_cost[i][j]:
-    #                     subtrees_cost[i][j] = cost
-    #                     allRoots[i][j] = r
-    #
-    #     return subtrees_cost, allRoots
-    #
-    # def construct_optimal_BST(self, allNodes, allRoots, beg, end):
-    #     if beg > end:
-    #         return None
-    #     root_index = allRoots[beg][end]
-    #     root = allNodes[root_index]
-    #     print(f"Constructing node with key: {root.key}, beg: {beg}, end: {end}, root_index: {root_index}")
-    #     if beg <= root_index - 1:
-    #         root.left = self.construct_optimal_BST(allNodes, allRoots, beg, root_index - 1)
-    #     if root_index + 1 <= end:
-    #         root.right = self.construct_optimal_BST(allNodes, allRoots, root_index + 1, end)
-    #     return root
-
-    # def insert_optimal_BST(self, node_list: [int], node_weights: [[int]]):
-    #     allNodes = [Node(key) for key in node_list]
-    #     subtrees_cost, allRoots = self.calculate_optimal_BST(node_weights, len(allNodes))
-    #     self.root = self.construct_optimal_BST(allNodes, allRoots, 0, len(allNodes) - 1)
-    #
-    # def calculate_optimal_BST(self, node_weights, n):
-    #     subtrees_cost = [[0] * n for _ in range(n)]
-    #     allRoots = [[0] * n for _ in range(n)]
-    #     W = [[0] * n for _ in range(n)]
-    #
-    #     for i in range(n):
-    #         for j in range(i, n):
-    #             W[i][j] = node_weights[i][j]
-    #             if i != j:
-    #                 W[i][j] += W[i][j - 1] if j > 0 else 0
-    #
-    #     for length in range(2, n + 1):
-    #         for i in range(n - length + 1):
-    #             j = i + length - 1
-    #             subtrees_cost[i][j] = float('inf')
-    #             for r in range(i, j + 1):
-    #                 cost = (subtrees_cost[i][r - 1] if r > i else 0) + \
-    #                        (subtrees_cost[r + 1][j] if r < j else 0) + \
-    #                        W[i][j]
-    #                 if cost < subtrees_cost[i][j]:
-    #                     subtrees_cost[i][j] = cost
-    #                     allRoots[i][j] = r
-    #
-    #     return subtrees_cost, allRoots
-    #
-    # def construct_optimal_BST(self, allNodes, allRoots, beg, end):
-    #     if beg > end:
-    #         return None
-    #     root_index = allRoots[beg][end]
-    #     root = allNodes[root_index]
-    #     root.left = self.construct_optimal_BST(allNodes, allRoots, beg, root_index - 1)
-    #     root.right = self.construct_optimal_BST(allNodes, allRoots, root_index + 1, end)
-    #     return root
 
     def find_LCA(self, u: int, v: int) -> Node:
         node = self.root
@@ -358,7 +193,7 @@ class SplayNetwork:
             elif h.right == k:
                 self.rotate_left(h)
             else:
-                raise Exception("H should be parent, but not has k as child")
+                raise Exception("h should be a parent node, but not has k as child")
             return k
         else:
             found = h == k.parent.parent
@@ -368,7 +203,7 @@ class SplayNetwork:
                 elif k.parent.left == k:
                     self.rotate_right(k.parent)
                 else:
-                    raise Exception("k.p has not k as child")
+                    raise Exception("Node k.parent has no child node k")
                 self.rotate_left(k.parent)
             elif k.parent.parent.left == k.parent:
                 if k.parent.right == k:
@@ -376,17 +211,17 @@ class SplayNetwork:
                 elif k.parent.left == k:
                     self.rotate_right(k.parent.parent)
                 else:
-                    raise Exception("k.p has not k as child")
+                    raise Exception("Node k.parent has no child node k")
                 self.rotate_right(k.parent)
             else:
-                raise Exception("k.p.p has not k.p as child")
+                raise Exception("Node k.parent.parent has no child node k.parent")
             if found:
                 return k
         return self.splay_up(h, k)
 
     def rotate_right(self, h: Node) -> Node:
         if not h.left:
-            raise Exception("kein linkes kind bei rechtsrotation")
+            raise Exception("No Left Child")
         x = h.left
         h.left = x.right
         cost = 0
@@ -405,7 +240,7 @@ class SplayNetwork:
             elif x.parent.right == h:
                 x.parent.right = x
             else:
-                raise Exception("x.p hatte h nicht als kind")
+                raise Exception("Node x.parent has no child node h")
         else:
             self.root = x
         cost += 2
@@ -416,7 +251,7 @@ class SplayNetwork:
 
     def rotate_left(self, h: Node) -> Node:
         if not h.right:
-            raise Exception("kein rechtes kind bei linksrotation")
+            raise Exception("No right child")
         x = h.right
         h.right = x.left
         cost = 0
@@ -435,7 +270,7 @@ class SplayNetwork:
             elif x.parent.right == h:
                 x.parent.right = x
             else:
-                raise Exception("x.p hatte h nicht als kind")
+                raise Exception("Node x.parent has no child node h")
         else:
             self.root = x
         cost += 2
@@ -454,7 +289,7 @@ class SplayNetwork:
             else:
                 current = current.left
         common_ancestor = current
-        # print(f"common_ancestor: {common_ancestor.key}")
+
         while current is not None and current.key != a and current.left is not None:
             if a < current.left.key:
                 current = current.left
@@ -462,7 +297,7 @@ class SplayNetwork:
                 current = current.right
             distance += 1
         current = common_ancestor
-        # print(f"common_ancestor 2: {common_ancestor.key}")
+
         while current is not None and current.key != b:
             if b < current.key:
                 current = current.left

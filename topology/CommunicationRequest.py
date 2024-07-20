@@ -1,4 +1,4 @@
-class CommunicationRequest:  # TODO Überprüfen, ob es vielleicht Sinn ergibt statt ints node Instanzen zu speichern
+class CommunicationRequest:
     def __init__(self, id, src, dst):
         self.id = id
         self.src = src
@@ -19,7 +19,3 @@ class CommunicationRequest:  # TODO Überprüfen, ob es vielleicht Sinn ergibt s
 
     # def get_size(self):
     #     return self.size
-
-    # Fulfilment Cost muss noch berechnet werden
-    # def set_cost(self, c):
-    #     self.cost = c
